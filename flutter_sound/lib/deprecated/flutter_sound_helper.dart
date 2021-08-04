@@ -23,18 +23,23 @@
 ///
 /// --------------------
 ///
-/// {@category Utilities}
-library helper;
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart' show Level, Logger;
-
-import '../../flutter_sound.dart';
-import 'wave_header.dart';
+import 'flutter_sound_ffmpeg.dart';
+import '../flutter_sound.dart';
+import '../public//util/wave_header.dart';
 import 'package:path_provider/path_provider.dart';
+
+
+/// -----------------------------------------------------------------
+/// This module file is deprecated.
+/// It is replaced by file `util/tau_helper.dart`
+/// -----------------------------------------------------------------
+
 
 /// The FlutterSoundHelper singleton for accessing the helpers functions
 FlutterSoundHelper flutterSoundHelper =
@@ -95,7 +100,9 @@ class FlutterSoundHelper {
   /// and without any complain from the link-editor.
   ///
   /// Executes FFmpeg with `commandArguments` provided.
-  Future<int?> executeFFmpegWithArguments(List<String?> arguments) {
+  Future<int?> executeFFmpegWithArguments(List<String?> arguments) async{
+    if (! await isFFmpegAvailable())
+      return 0;
     flutterFFmpeg ??= FlutterSoundFFmpeg();
     return flutterFFmpeg!.executeWithArguments(arguments);
   }
@@ -108,7 +115,8 @@ class FlutterSoundHelper {
   ///
   /// This simple verb is used to get the result of the last FFmpeg command.
   Future<int?> getLastFFmpegReturnCode() async {
-    await isFFmpegAvailable();
+    if (! await isFFmpegAvailable())
+      return 0;
     return _flutterFFmpegConfig!.getLastReturnCode();
   }
 
@@ -287,7 +295,9 @@ class FlutterSoundHelper {
   /// Note : this verb uses FFmpeg and is not available int the LITE flavor of Flutter Sound.
   Future<bool> convertFile(String? inputFile, Codec? inputCodec,
       String outputFile, Codec outputCodec) async {
-    int? rc = 0;
+    if (! await isFFmpegAvailable())
+      return false;
+      int? rc = 0;
     inputFile = await _getPath(inputFile);
     outputFile = await _getPath(outputFile);
     if (inputCodec == Codec.opusOGG &&

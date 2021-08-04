@@ -38,10 +38,10 @@ process_dart_file()
 {
 	if [ $2 == 'FULL' ]; then
 		gsed -i "s/^ *import *'package:flutter_sound_lite\//import 'package:flutter_sound\//" $1
-    gsed -i "s/^ *import *'package:flauto_lite\//import 'package:flauto\//" $1
+               gsed -i "s/^ *import *'package:flauto_lite\//import 'package:flauto\//" $1
 	else
 		gsed -i "s/^ *import *'package:flutter_sound\//import 'package:flutter_sound_lite\//" $1
-    gsed -i "s/^ *import *'package:flauto\//import 'package:flauto_lite\//" $1
+               gsed -i "s/^ *import *'package:flauto\//import 'package:flauto_lite\//" $1
 	fi
 }
 
@@ -52,6 +52,10 @@ case $1 in
 FULL)
 
   cd flutter_sound
+                #gsed -i  "s/^\/\/ export 'deprecated\/flutter_sound_ffmpeg\.dart/export 'deprecated\/flutter_sound_ffmpeg\.dart/" lib/flutter_sound.dart
+		gsed -i  's/^#  flutter_ffmpeg/  flutter_ffmpeg/' pubspec.yaml
+		gsed -i  's/^const bool _hasFFmpeg = false;$/const bool _hasFFmpeg = true;/' lib/public/util/tau_helper.dart
+		gsed -i  "s/^import 'dummy_ffmpeg.dart';$/import 'package:flutter_ffmpeg\/flutter_ffmpeg.dart';/" lib/public/util/tau_helper.dart
 
 		gsed -i  's/^name: flutter_sound_lite$/name: flutter_sound/' pubspec.yaml
                 gsed -i  's/^name: flauto_lite$/name: flauto/' pubspec.yaml
@@ -63,11 +67,11 @@ FULL)
 # ---
 		gsed -i  "s/^ *s.name *=* 'flutter_sound_lite'$/s.name = 'flutter_sound'/"  ios/flutter_sound.podspec 2>/dev/null
                 gsed -i  "s/^ *s.name *=* 'flauto_lite'$/s.name = 'flutter_sound'/"  ios/flutter_sound.podspec 2>/dev/null
-                gsed -i  "s/^ *#* s.dependency *'mobile-ffmpeg-/  s.dependency 'mobile-ffmpeg-/"   ios/flutter_sound.podspec 2>/dev/null
+                gsed -i  "s/^ *# *s.dependency *'mobile-ffmpeg-/  s.dependency 'mobile-ffmpeg-/"   ios/flutter_sound.podspec 2>/dev/null
+                gsed -i  "s/^ *# *s.dependency *'mobile-ffmpeg-/  s.dependency 'mobile-ffmpeg-/"  ios/flauto_lite.podspec 2>/dev/null
 # ---
                 gsed -i  "s/^ *s.name *=* 'flutter_sound_lite'$/s.name = 'flauto'/"  ios/flauto.podspec 2>/dev/null
                 gsed -i  "s/^ *s.name *=* 'flauto_lite'$/s.name = 'flauto'/"  ios/flauto.podspec 2>/dev/null
-                gsed -i  "s/^ *#* s.dependency *'mobile-ffmpeg-/  s.dependency *'mobile-ffmpeg-/"   ios/flauto_lite.podspec 2>/dev/null
 # ---
 
 		gsed -i  "s/^ *#define *[A-Z]*_FLAVOR/#define FULL_FLAVOR/"   ios/Classes/FlutterSound.h
@@ -96,22 +100,26 @@ FULL)
 
 LITE)
   cd flutter_sound
+                #gsed -i  "s/^export 'deprecated\/flutter_sound_ffmpeg\.dart/\/\/ export 'deprecated\/flutter_sound_ffmpeg\.dart/" lib/flutter_sound.dart
+		gsed -i  's/^  flutter_ffmpeg/#  flutter_ffmpeg/' pubspec.yaml
+		gsed -i  's/^const bool _hasFFmpeg = true;$/const bool _hasFFmpeg = false;/'  lib/public/util/tau_helper.dart
+		gsed -i  "s/^import 'package:flutter_ffmpeg\/flutter_ffmpeg.dart';$/import 'dummy_ffmpeg.dart';/" lib/public/util/tau_helper.dart
 
 		gsed -i  's/^name: flutter_sound$/name: flutter_sound_lite/' pubspec.yaml
                 gsed -i  's/^name: flauto$/name: flauto_lite/' pubspec.yaml
 		gsed -i  's/^\( *\)flutter_sound:/\1flutter_sound_lite:/' example/pubspec.yaml
                 gsed -i  's/^\( *\)flauto:/\1flauto_lite:/' example/pubspec.yaml
 
-		mv ios/flutter_sound.podspec ios/flutter_sound_lite.podspec
+		mv ios/flutter_sound.podspec ios/flutter_sound_lite.podspec 2>/dev/null
                 mv ios/flauto.podspec        ios/flauto_lite.podspec 2>/dev/null
 # ---
 		gsed -i  "s/^ *s.name *=* 'flutter_sound'$/s.name = 'flutter_sound_lite'/"  ios/flutter_sound_lite.podspec 2>/dev/null
                 gsed -i  "s/^ *s.name *=* 'flauto'$/s.name = 'flutter_sound_lite'/"  ios/flutter_sound_lite.podspec 2>/dev/null
                 gsed -i  "s/^ *#* s.dependency *'mobile-ffmpeg-/  # s.dependency 'mobile-ffmpeg-/"   ios/flutter_sound_lite.podspec 2>/dev/null
+                #gsed -i  "s/^ *#* s.dependency *'mobile-ffmpeg-/  # s.dependency 'mobile-ffmpeg-/"   ios/flauto_lite.podspec 2>/dev/null
 # ---
                 gsed -i  "s/^ *s.name *=* 'flutter_sound'$/s.name = 'flauto_lite'/"  ios/flauto_lite.podspec 2>/dev/null
                 gsed -i  "s/^ *s.name *=* 'flauto'$/s.name = 'flauto_lite'/"  ios/flauto_lite.podspec 2>/dev/null
-                gsed -i  "/^ *#* s.dependency *'mobile-ffmpeg-/  # s.dependency *'mobile-ffmpeg-/"   ios/flauto_lite.podspec 2>/dev/null
 # ---
 
                 gsed -i  "s/^ *#define *[A-Z]*_FLAVOR/#define LITE_FLAVOR/"   ios/Classes/FlutterSound.h

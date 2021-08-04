@@ -516,6 +516,10 @@ entries:
       url: /links_migration.html
       output: web, pdf
 
+    - title: Migration V9
+      url: /links_migration_v9.html
+      output: web, pdf
+
     - title: Problem Report
       output: web, pdf
       hint: Issues on Github

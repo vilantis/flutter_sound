@@ -32,8 +32,6 @@ library ui_recorder;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../flutter_sound.dart';
-import '../flutter_sound_player.dart';
-import '../flutter_sound_recorder.dart';
 
 /// Callback fn type
 typedef OnStart = void Function();

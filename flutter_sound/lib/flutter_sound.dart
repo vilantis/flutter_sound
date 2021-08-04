@@ -43,11 +43,17 @@ library everything;
 
 export 'package:flutter_sound_platform_interface/flutter_sound_platform_interface.dart';
 
+/// Deprecated
+export 'deprecated/flutter_sound_header.dart';
+export 'deprecated/flutter_sound_helper.dart';
+export 'deprecated/flutter_sound_player.dart';
+export 'deprecated/flutter_sound_recorder.dart';
+
 /// Main
 ///library tau;
-export 'public/flutter_sound_player.dart';
-export 'public/flutter_sound_recorder.dart';
 export 'public/tau.dart';
+export 'public/tau_player.dart';
+export 'public/tau_recorder.dart';
 
 ///
 ///library UI;
@@ -57,5 +63,4 @@ export 'public/ui/sound_recorder_ui.dart';
 
 ///
 ///library util;
-export 'public/util/flutter_sound_ffmpeg.dart';
-export 'public/util/flutter_sound_helper.dart';
+export 'public/util/tau_helper.dart';

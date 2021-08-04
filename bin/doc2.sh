@@ -70,8 +70,8 @@ do
 done
 ln -s readme.html index.html
 
-rm -rf /var/www/vhosts/canardoux.xyz/tau.canardoux.xyz/*
-cp -a /tmp/toto_doc/_site/* /var/www/vhosts/canardoux.xyz/tau.canardoux.xyz/
+rm -rf /var/www/vhosts/canardoux.xyz/tau.canardoux.xyz/doc-v9
+cp -a /tmp/toto_doc/_site/* /var/www/vhosts/canardoux.xyz/tau.canardoux.xyz/doc-v9
 
 cd
 rm _toto.tgz _toto3.tgz

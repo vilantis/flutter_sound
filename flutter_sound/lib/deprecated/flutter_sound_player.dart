@@ -16,10 +16,6 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/// **THE** Flutter Sound Player
-/// {@category Main}
-library player;
-
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
@@ -35,35 +31,14 @@ import 'package:synchronized/synchronized.dart';
 
 import '../flutter_sound.dart';
 
+
+/// -----------------------------------------------------------------
+/// This module file is deprecated.
+/// It is replaced by file `tau_player.dart`
+/// -----------------------------------------------------------------
+
 /// The default blocksize used when playing from Stream.
 const _blockSize = 4096;
-
-/// The possible states of the Player.
-enum PlayerState {
-  /// Player is stopped
-  isStopped,
-
-  /// Player is playing
-  isPlaying,
-
-  /// Player is paused
-  isPaused,
-}
-
-/// Playback function type for [FlutterSoundPlayer.startPlayer()].
-///
-/// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
-typedef TWhenFinished = void Function();
-
-/// Playback function type for [FlutterSoundPlayer.startPlayerFromTrack()].
-///
-/// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
-typedef TonPaused = void Function(bool paused);
-
-/// Playback function type for [FlutterSoundPlayer.startPlayerFromTrack()].
-///
-/// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
-typedef TonSkip = void Function();
 
 ///
 const List<Codec> _tabAndroidConvert = [
@@ -133,6 +108,9 @@ const List<Codec> _tabWebConvert = [
   Codec.defaultCodec, // opusWebM
   Codec.defaultCodec, // vorbisWebM
 ];
+
+
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1910,96 +1888,49 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   }
 }
 
-/// Used to stream data about the position of the
-/// playback as playback proceeds.
-class PlaybackDisposition {
-  /// The duration of the media.
-  final Duration duration;
 
-  /// The current position within the media
-  /// that we are playing.
-  final Duration position;
 
-  /// A convenience ctor. If you are using a stream builder
-  /// you can use this to set initialData with both duration
-  /// and postion as 0.
-  PlaybackDisposition.zero()
-      : position = Duration(seconds: 0),
-        duration = Duration(seconds: 0);
+/// FoodData are the regular objects received from a recorder when recording to a Dart Stream
+/// or sent to a player when playing from a Dart Stream
+class FoodData extends Food {
+  /// the data to be sent (or received)
+  Uint8List? data;
 
-  /// The constructor
-  PlaybackDisposition({
-    this.position = Duration.zero,
-    this.duration = Duration.zero,
-  });
+  /// The constructor, specifying the data to be sent or that has been received
+  /* ctor */ FoodData(this.data);
 
-  ///
+  /// Used internally by Flutter Sound
   @override
-  String toString() {
-    return 'duration: $duration, '
-        'position: $position';
-  }
+  Future<void> exec(FlutterSoundPlayer player) => player.feedFromStream(data!);
 }
 
-/// The track to play by [FlutterSoundPlayer.startPlayerFromTrack()].
-class Track {
-  /// The title of this track
-  String? trackTitle;
+/// foodEvent is a special kin of food which allows to re-synchronize a stream
+/// with a player that play from a Dart Stream
+class FoodEvent extends Food {
+  /// The callback to fire when this food is synchronized with the player
+  Function on;
 
-  /// The buffer containing the audio file to play
-  Uint8List? dataBuffer;
+  /// The constructor, specifying the callback which must be fired when synchronization is done
+  /* ctor */ FoodEvent(this.on);
 
-  /// The name of the author of this track
-  String? trackAuthor;
+  /// Used internally by Flutter Sound
+  @override
+  Future<void> exec(FlutterSoundPlayer player) async => on();
+}
 
-  /// The path that points to the track audio file
-  String? trackPath;
 
-  /// The URL that points to the album art of the track
-  String? albumArtUrl;
+/// Food is an abstract class which represents objects that can be sent
+/// to a player when playing data from astream or received by a recorder
+/// when recording to a Dart Stream.
+///
+/// This class is extended by
+/// - [FoodData] and
+/// - [FoodEvent].
+abstract class Food {
+  /// use internally by Flutter Sound
+  Future<void> exec(FlutterSoundPlayer player);
 
-  /// The asset that points to the album art of the track
-  String? albumArtAsset;
+  /// use internally by Flutter Sound
+  void dummy(FlutterSoundPlayer player) {} // Just to satisfy `dartanalyzer`
 
-  /// The file that points to the album art of the track
-  String? albumArtFile;
-
-  /// The image that points to the album art of the track
-  //final String albumArtImage;
-
-  /// The codec of the audio file to play. If this parameter's value is null
-  /// it will be set to `t_CODEC.DEFAULT`.
-  Codec codec;
-
-  /// The constructor
-  Track({
-    this.trackPath,
-    this.dataBuffer,
-    this.trackTitle,
-    this.trackAuthor,
-    this.albumArtUrl,
-    this.albumArtAsset,
-    this.albumArtFile,
-    this.codec = Codec.defaultCodec,
-  }) {
-    assert((!(trackPath != null && dataBuffer != null)),
-        'You cannot provide both a path and a buffer.');
-  }
-
-  /// Convert this object to a [Map] containing the properties of this object
-  /// as values.
-  Map<String, dynamic> toMap() {
-    final map = {
-      'path': trackPath,
-      'dataBuffer': dataBuffer,
-      'title': trackTitle,
-      'author': trackAuthor,
-      'albumArtUrl': albumArtUrl,
-      'albumArtAsset': albumArtAsset,
-      'albumArtFile': albumArtFile,
-      'bufferCodecIndex': codec.index,
-    };
-
-    return map;
-  }
 }

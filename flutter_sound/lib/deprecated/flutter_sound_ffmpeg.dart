@@ -17,21 +17,17 @@
  * along with FlutterFFmpeg.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// ------------------------
-///
-/// Flutter Sound uses its own ffmpeg module
-/// instead of depends on `flutter_ffmpeg` plugin,
-/// because we wanted to simplify the App dependencies declarations
-///  specially on Android.
-///
-/// -------------------------
-///
-/// {@category Utilities}
-library ffmpeg;
-
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart' show Level, Logger;
+
+
+
+/// -----------------------------------------------------------------
+/// This module file is deprecated.
+/// Now, we depends correctely of the Flutter_ffmpeg official library
+/// -----------------------------------------------------------------
+
 
 /// Represents an ongoing FFmpeg execution.
 class FlutterSoundFFmpegExecution {
@@ -369,8 +365,8 @@ class FlutterSoundFFmpegConfig {
   /// Returns log level.
   Future<int?> getLogLevel() async {
     try {
-      var result = await _methodChannel.invokeMethod('getLogLevel');
-      return result['level'];
+      //var result = await _methodChannel.invokeMethod('getLogLevel');
+      return Level.error.index; // not implemented
     } on PlatformException catch (e, stack) {
       logger.e('Plugin getLogLevel error: ${e.message}');
       return Future.error('getLogLevel failed.', stack);
@@ -380,7 +376,7 @@ class FlutterSoundFFmpegConfig {
   /// Sets log level.
   Future<void> setLogLevel(int logLevel) async {
     try {
-      await _methodChannel.invokeMethod('setLogLevel', {'level': logLevel});
+      //await _methodChannel.invokeMethod('setLogLevel', {'level': logLevel});
     } on PlatformException catch (e) {
       logger.e('Plugin setLogLevel error: ${e.message}');
     }
@@ -389,7 +385,7 @@ class FlutterSoundFFmpegConfig {
   /// Enables log events.
   Future<void> enableLogs() async {
     try {
-      await _methodChannel.invokeMethod('enableLogs');
+      //await _methodChannel.invokeMethod('enableLogs');
     } on PlatformException catch (e) {
       logger.e('Plugin enableLogs error: ${e.message}');
     }
@@ -400,7 +396,7 @@ class FlutterSoundFFmpegConfig {
   /// Note that log functionality is enabled by default.
   Future<void> disableLogs() async {
     try {
-      await _methodChannel.invokeMethod('disableLogs');
+      //await _methodChannel.invokeMethod('disableLogs');
     } on PlatformException catch (e) {
       logger.e('Plugin disableLogs error: ${e.message}');
     }

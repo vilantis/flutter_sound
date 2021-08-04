@@ -3,8 +3,8 @@
 
 -------------------------------------------------------------------------------------
 
-- ## Flutter Sound user: your [documentation is there](https://tau.canardoux.xyz/readme.html)
-- ## The [CHANGELOG file is here](https://tau.canardoux.xyz/changelog.html)
+- ## Flutter Sound user: your [documentation is there](https://tau.canardoux.xyz/doc-v9/readme.html)
+- ## The [CHANGELOG file is here](https://tau.canardoux.xyz/doc-v9/changelog.html)
 
 -----------------------------------------------------------------------------------------------------------------------------------
 

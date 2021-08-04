@@ -7,6 +7,10 @@ permalink: changelog.html
 summary: The Changelog of The &tau; Project.
 toc: false
 ---
+## 9.0.0+beta-1
+
+- Flutter Sound FULL is now correctely linked with Flutter_ffmpeg. This means that if the App needs to access flutter_ffmpeg, it can use either the FULL flavor or the LITE flavor
+
 ## 8.3.9
 
 - Modify the examples to be able to record on Safari.

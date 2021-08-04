@@ -34,8 +34,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import '../../flutter_sound.dart';
-import '../flutter_sound_player.dart';
-import 'sound_player_ui.dart';
 
 ///
 /// This class is a Provider style widget designed to
