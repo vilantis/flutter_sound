@@ -34,6 +34,7 @@ import 'flutter_sound_recorder.dart';
 ///
 /// The possible states of the players and recorders
 /// @nodoc
+@deprecated
 enum Initialized {
   /// The object has been created but is not initialized
   notInitialized,

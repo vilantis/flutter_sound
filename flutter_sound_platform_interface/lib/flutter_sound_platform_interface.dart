@@ -24,6 +24,8 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 
 
+/// @nodoc
+@deprecated
 enum Codec {
   // this enum MUST be synchronized with fluttersound/AudioInterface.java
   // and ios/Classes/FlutterSoundPlugin.h

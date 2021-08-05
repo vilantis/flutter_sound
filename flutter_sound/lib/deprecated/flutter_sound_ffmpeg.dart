@@ -30,6 +30,8 @@ import 'package:logger/logger.dart' show Level, Logger;
 
 
 /// Represents an ongoing FFmpeg execution.
+/// @nodoc
+@deprecated
 class FlutterSoundFFmpegExecution {
   ///
   int? executionId;
@@ -42,6 +44,8 @@ class FlutterSoundFFmpegExecution {
 }
 
 /// Represents a completed FFmpeg execution.
+/// @nodoc
+@deprecated
 class FlutterSoundCompletedFFmpegExecution {
   ///
   int? executionId;
@@ -54,6 +58,8 @@ class FlutterSoundCompletedFFmpegExecution {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundLog {
   ///
   int? executionId;
@@ -69,6 +75,8 @@ class FlutterSoundLog {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundStatistics {
   ///
   int? executionId;
@@ -100,6 +108,8 @@ class FlutterSoundStatistics {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundStreamInformation {
   final Map<dynamic, dynamic> _allProperties;
 
@@ -113,6 +123,8 @@ class FlutterSoundStreamInformation {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundMediaInformation {
   final Map<dynamic, dynamic>? _allProperties;
 
@@ -158,13 +170,19 @@ class FlutterSoundMediaInformation {
 //typedef LogCallback = void Function(FlutterSoundLog log);
 
 ///
+/// @nodoc
+@deprecated
 typedef StatisticsCallback = void Function(FlutterSoundStatistics? statistics);
 
 ///
+/// @nodoc
+@deprecated
 typedef ExecuteCallback = void Function(
     FlutterSoundCompletedFFmpegExecution execution);
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundFFmpegConfig {
   /// The FlutterSoundFFmpegConfig Logger
   Logger logger =
@@ -183,6 +201,8 @@ class FlutterSoundFFmpegConfig {
   StatisticsCallback? statisticsCallback;
 
   ///
+  /// @nodoc
+  @deprecated
   FlutterSoundFFmpegConfig(Logger aLogger) {
     //logCallback = null;
     logger = aLogger;
@@ -236,6 +256,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   ///
+  /// @nodoc
+  @deprecated
   void handleLogEvent(Map<dynamic, dynamic> logEvent) {
     //int? executionId = logEvent['executionId'];
     //int level = logEvent['level'];
@@ -271,6 +293,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   ///
+  /// @nodoc
+  @deprecated
   void handleStatisticsEvent(Map<dynamic, dynamic> statisticsEvent) {
     if (statisticsCallback != null) {
       statisticsCallback!(eventToStatistics(statisticsEvent));
@@ -278,6 +302,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   ///
+  /// @nodoc
+  @deprecated
   void handleExecuteEvent(Map<dynamic, dynamic> executeEvent) {
     int? executionId = executeEvent['executionId'];
     int? returnCode = executeEvent['returnCode'];
@@ -293,6 +319,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Creates a new `Statistics` instance from event map.
+  /// @nodoc
+  @deprecated
   FlutterSoundStatistics? eventToStatistics(Map<dynamic, dynamic> eventMap) {
     if (eventMap.isEmpty) {
       return null;
@@ -312,6 +340,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns FFmpeg version bundled within the library.
+  /// @nodoc
+  @deprecated
   Future<String?> getFFmpegVersion() async {
     try {
       var result = await _methodChannel.invokeMethod('getFFmpegVersion');
@@ -323,6 +353,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns platform name in which library is loaded.
+  /// @nodoc
+  @deprecated
   Future<String?> getPlatform() async {
     try {
       var result = await _methodChannel.invokeMethod('getPlatform');
@@ -334,6 +366,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Enables log and statistics redirection.
+  /// @nodoc
+  @deprecated
   Future<void> enableRedirection() async {
     try {
       await _methodChannel.invokeMethod('enableRedirection');
@@ -354,6 +388,8 @@ class FlutterSoundFFmpegConfig {
   /// function. When statistics redirection is disabled they are not p rinted
   /// anywhere and only saved as lastReceivedStatistics data which can be
   /// polled with [getLastReceivedStatistics()] method.
+  /// @nodoc
+  @deprecated
   Future<void> disableRedirection() async {
     try {
       await _methodChannel.invokeMethod('disableRedirection');
@@ -363,6 +399,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns log level.
+  /// @nodoc
+  @deprecated
   Future<int?> getLogLevel() async {
     try {
       //var result = await _methodChannel.invokeMethod('getLogLevel');
@@ -374,6 +412,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Sets log level.
+  /// @nodoc
+  @deprecated
   Future<void> setLogLevel(int logLevel) async {
     try {
       //await _methodChannel.invokeMethod('setLogLevel', {'level': logLevel});
@@ -383,6 +423,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Enables log events.
+  /// @nodoc
+  @deprecated
   Future<void> enableLogs() async {
     try {
       //await _methodChannel.invokeMethod('enableLogs');
@@ -394,6 +436,8 @@ class FlutterSoundFFmpegConfig {
   /// Disables log functionality of the library. Logs will not be p rinted to
   /// console and log callback will be disabled.
   /// Note that log functionality is enabled by default.
+  /// @nodoc
+  @deprecated
   Future<void> disableLogs() async {
     try {
       //await _methodChannel.invokeMethod('disableLogs');
@@ -403,6 +447,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Enables statistics events.
+  /// @nodoc
+  @deprecated
   Future<void> enableStatistics() async {
     try {
       await _methodChannel.invokeMethod('enableStatistics');
@@ -415,6 +461,8 @@ class FlutterSoundFFmpegConfig {
   /// will be disabled but the last received statistics data will be still
   /// available.
   /// Note that statistics functionality is enabled by default.
+  /// @nodoc
+  @deprecated
   Future<void> disableStatistics() async {
     try {
       await _methodChannel.invokeMethod('disableStatistics');
@@ -439,6 +487,8 @@ class FlutterSoundFFmpegConfig {
   /// Sets a callback to redirect FFmpeg statistics. [newCallback] is the new
   /// statistics callback function, use null to disable a previously defined
   /// callback.
+  /// @nodoc
+  @deprecated
   void enableStatisticsCallback(StatisticsCallback newCallback) {
     try {
       statisticsCallback = newCallback;
@@ -448,6 +498,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns the last received `Statistics` instance.
+  /// @nodoc
+  @deprecated
   Future<FlutterSoundStatistics?> getLastReceivedStatistics() async {
     try {
       var r = await _methodChannel.invokeMethod('getLastReceivedStatistics');
@@ -460,6 +512,8 @@ class FlutterSoundFFmpegConfig {
 
   /// Resets last received statistics. It is recommended to call it before
   /// starting a new execution.
+  /// @nodoc
+  @deprecated
   Future<void> resetStatistics() async {
     try {
       await _methodChannel.invokeMethod('resetStatistics');
@@ -469,6 +523,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Sets and overrides fontconfig configuration directory.
+  /// @nodoc
+  @deprecated
   Future<void> setFontconfigConfigurationPath(String path) async {
     try {
       await _methodChannel
@@ -480,6 +536,8 @@ class FlutterSoundFFmpegConfig {
 
   /// Registers fonts inside the given [fontDirectory], so they will be
   /// available to use in FFmpeg filters.
+  /// @nodoc
+  @deprecated
   Future<void> setFontDirectory(
       String fontDirectory, Map<String, String> fontNameMap) async {
     var parameters;
@@ -493,6 +551,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns FlutterFFmpeg package name.
+  /// @nodoc
+  @deprecated
   Future<String?> getPackageName() async {
     try {
       var result = await _methodChannel.invokeMethod('getPackageName');
@@ -504,6 +564,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns supported external libraries.
+  /// @nodoc
+  @deprecated
   Future<List<dynamic>?> getExternalLibraries() async {
     try {
       var result = await _methodChannel.invokeMethod('getExternalLibraries');
@@ -515,6 +577,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Returns return code of the last executed command.
+  /// @nodoc
+  @deprecated
   Future<int?> getLastReturnCode() async {
     try {
       var result = await _methodChannel.invokeMethod('getLastReturnCode');
@@ -531,6 +595,8 @@ class FlutterSoundFFmpegConfig {
   /// This method does not support executing multiple concurrent commands. If
   /// you execute multiple commands at the same time, this method will return
   /// output from all executions.
+  /// @nodoc
+  @deprecated
   Future<String?> getLastCommandOutput() async {
     try {
       var result = await _methodChannel.invokeMethod('getLastCommandOutput');
@@ -542,6 +608,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Creates a new FFmpeg pipe and returns its path.
+  /// @nodoc
+  @deprecated
   Future<String?> registerNewFFmpegPipe() async {
     try {
       var result = await _methodChannel.invokeMethod('registerNewFFmpegPipe');
@@ -553,6 +621,8 @@ class FlutterSoundFFmpegConfig {
   }
 
   /// Sets an environment variable.
+  /// @nodoc
+  @deprecated
   Future<void> setEnvironmentVariable(
       String variableName, String variableValue) async {
     try {
@@ -568,6 +638,8 @@ class FlutterSoundFFmpegConfig {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundFFmpeg {
   /// The FlutterSoundFFmpeg Logger
   Logger logger = Logger(level: Level.info);
@@ -580,6 +652,8 @@ class FlutterSoundFFmpeg {
   ///
   /// Returns zero on successful execution, 255 on user cancel and non-zero on
   /// error.
+  /// @nodoc
+  @deprecated
   Future<int?> executeWithArguments(List<String?> arguments) async {
     try {
       var result = await _methodChannel
@@ -596,6 +670,8 @@ class FlutterSoundFFmpeg {
   ///
   /// Returns zero on successful execution, 255 on user cancel and non-zero on
   /// error.
+  /// @nodoc
+  @deprecated
   Future<int?> execute(String command) async {
     return executeWithArguments(FlutterSoundFFmpeg.parseArguments(command));
   }
@@ -603,6 +679,8 @@ class FlutterSoundFFmpeg {
   /// Executes FFmpeg asynchronously with `commandArguments` provided. This
   /// method starts the execution and does not wait the execution to complete.
   /// It returns immediately with executionId created for this execution.
+  /// @nodoc
+  @deprecated
   Future<int> executeAsyncWithArguments(
       List<String> arguments, ExecuteCallback executeCallback) async {
     try {
@@ -623,6 +701,8 @@ class FlutterSoundFFmpeg {
   /// Executes FFmpeg asynchronously with [command] provided. This method
   /// starts the execution and does not wait the execution to complete.
   /// It returns immediately with executionId created for this execution.
+  /// @nodoc
+  @deprecated
   Future<int> executeAsync(
       String command, ExecuteCallback executeCallback) async {
     return executeAsyncWithArguments(
@@ -630,6 +710,8 @@ class FlutterSoundFFmpeg {
   }
 
   /// Cancels all ongoing executions.
+  /// @nodoc
+  @deprecated
   Future<void> cancel() async {
     try {
       await _methodChannel.invokeMethod('cancel');
@@ -639,6 +721,8 @@ class FlutterSoundFFmpeg {
   }
 
   /// Cancels the execution specified with [executionId].
+  /// @nodoc
+  @deprecated
   Future<void> cancelExecution(int executionId) async {
     try {
       await _methodChannel.invokeMethod('cancel', {'executionId': executionId});
@@ -648,6 +732,8 @@ class FlutterSoundFFmpeg {
   }
 
   /// Lists ongoing FFmpeg executions.
+  /// @nodoc
+  @deprecated
   Future<List<FlutterSoundFFmpegExecution>> listExecutions() async {
     try {
       return await _methodChannel.invokeMethod('listExecutions').then((value) {
@@ -673,6 +759,8 @@ class FlutterSoundFFmpeg {
   }
 
   /// Parses the given [command] into arguments.
+  /// @nodoc
+  @deprecated
   static List<String> parseArguments(String command) {
     var argumentList = List<String>.empty(growable: true);
     var currentArgument = StringBuffer();
@@ -728,6 +816,8 @@ class FlutterSoundFFmpeg {
 }
 
 ///
+/// @nodoc
+@deprecated
 class FlutterSoundFFprobe {
   /// The FlutterSoundFFprobe Logger
   Logger logger = Logger(level: Level.info);
@@ -740,6 +830,8 @@ class FlutterSoundFFprobe {
   ///
   /// Returns zero on successful execution, 255 on user cancel and non-zero on
   /// error.
+  /// @nodoc
+  @deprecated
   Future<int?> executeWithArguments(List<String> arguments) async {
     try {
       var result = await _methodChannel.invokeMethod(
@@ -756,6 +848,8 @@ class FlutterSoundFFprobe {
   ///
   /// Returns zero on successful execution, 255 on user cancel and non-zero on
   /// error.
+  /// @nodoc
+  @deprecated
   Future<int?> execute(String command) async {
     try {
       var result = await _methodChannel.invokeMethod(
@@ -773,6 +867,8 @@ class FlutterSoundFFprobe {
   /// This method does not support executing multiple concurrent operations.
   /// If you execute multiple operations (execute or getMediaInformation) at
   /// the same time, the response of this method is not predictable.
+  /// @nodoc
+  @deprecated
   Future<FlutterSoundMediaInformation> getMediaInformation(String path) async {
     try {
       var r = await _methodChannel

@@ -63,6 +63,8 @@ import '../flutter_sound.dart';
 /// This verb will call [stopRecorder()] if necessary.
 ///
 /// ----------------------------------------------------------------------------------------------------
+/// @nodoc
+@deprecated
 class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// The FlutterSoundRecorder Logger
   Logger _logger = Logger(level: Level.debug);
@@ -73,6 +75,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Used if the App wants to dynamically change the Log Level.
   /// Seldom used. Most of the time the Log Level is specified during the constructor.
+  /// @nodoc
+  @deprecated
   Future<void> setLogLevel(Level aLevel) async {
     _logLevel = aLevel;
     _logger = Logger(level: aLevel);
@@ -122,6 +126,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///
   /// It is a duplicate from [onProgress] and should not be here
   /// @nodoc
+  @deprecated
   Stream<RecordingDisposition>? dispositionStream() {
     return (_recorderController != null) ? _recorderController!.stream : null;
   }
@@ -138,21 +143,31 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///                 ...
   ///         }
   /// ```
+  /// @nodoc
+  @deprecated
   Stream<RecordingDisposition>? get onProgress =>
       (_recorderController != null) ? _recorderController!.stream : null;
 
   /// True if `recorderState.isRecording`
+  /// @nodoc
+  @deprecated
   bool get isRecording => (_recorderState == RecorderState.isRecording);
 
   /// True if `recorderState.isStopped`
+  /// @nodoc
+  @deprecated
   bool get isStopped => (_recorderState == RecorderState.isStopped);
 
   /// True if `recorderState.isPaused`
+  /// @nodoc
+  @deprecated
   bool get isPaused => (_recorderState == RecorderState.isPaused);
 
   /// Instanciate a new Flutter Sound Recorder.
   /// The optional paramater `Level logLevel` specify the Logger Level you are interested by.
-  /* ctor */ FlutterSoundRecorder({Level logLevel = Level.debug}) {
+  /// @nodoc
+  @deprecated
+  FlutterSoundRecorder({Level logLevel = Level.debug}) {
     _logger = Logger(level: logLevel);
     _logger.d('ctor: FlutterSoundRecorder()');
   }
@@ -161,6 +176,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void recordingData({Uint8List? data}) {
     if (_userStreamSink != null) {
@@ -171,6 +187,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void updateRecorderProgress({int? duration, double? dbPeakLevel}) {
     //int duration = call['duration'] as int;
@@ -183,6 +200,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void openRecorderCompleted(int? state, bool? success) {
     _logger.d('---> openRecorderCompleted: $success');
@@ -201,6 +219,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void closeRecorderCompleted(int? state, bool? success) {
     _logger.d('---> closeRecorderCompleted');
@@ -214,6 +233,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void pauseRecorderCompleted(int? state, bool? success) {
     _logger.d('---> pauseRecorderCompleted: $success');
@@ -230,6 +250,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void resumeRecorderCompleted(int? state, bool? success) {
     _logger.d('---> resumeRecorderCompleted: $success');
@@ -246,6 +267,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void startRecorderCompleted(int? state, bool? success) {
     _logger.d('---> startRecorderCompleted: $success');
@@ -262,7 +284,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
-  @override
+  @deprecated
   void stopRecorderCompleted(int? state, bool? success, String? url) {
     _logger.d('---> stopRecorderCompleted: $success');
     assert(state != null);
@@ -322,6 +344,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
     }
   }
 
+  /// @nodoc
+  @deprecated
   @override
   void log(Level logLevel, String msg) {
     _logger.log(logLevel, msg);
@@ -381,6 +405,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///     myRecorder.closeAudioSession();
   ///     myRecorder = null;
   /// ```
+  /// @nodoc
+  @deprecated
   Future<FlutterSoundRecorder?> openAudioSession(
       {AudioFocus focus = AudioFocus.requestFocusTransient,
       SessionCategory category = SessionCategory.playAndRecord,
@@ -457,6 +483,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// You must close your recorder when you have finished with it, for releasing the resources.
   /// Delete all the temporary files created with `startRecorder()`
 
+  /// @nodoc
+  @deprecated
   Future<void> closeAudioSession() async {
     _logger.d('FS:---> closeAudioSession ');
     await _lock.synchronized(() async {
@@ -519,6 +547,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///         if ( await myRecorder.isEncoderSupported(Codec.opusOGG) ) doSomething;
   /// ```
   /// `isEncoderSupported` is a method for legacy reason, but should be a static function.
+  /// @nodoc
+  @deprecated
   Future<bool> isEncoderSupported(Codec codec) async {
     // For encoding ogg/opus on ios, we need to support two steps :
     // - encode CAF/OPPUS (with native Apple AVFoundation)
@@ -559,6 +589,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///
   /// Zero means "no callbacks".
   /// The default is zero.
+  /// @nodoc
+  @deprecated
   Future<void> setSubscriptionDuration(Duration duration) async {
     _logger.d('FS:---> setSubscriptionDuration ');
     await _waitOpen();
@@ -625,6 +657,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///
   ///     await myRecorder.startRecorder(toFile: 'foo', codec: t_CODEC.CODEC_AAC,); // A temporary file named 'foo'
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> startRecorder({
     Codec codec = Codec.defaultCodec,
     String? toFile,
@@ -785,6 +819,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///         }
   /// }
   /// ```
+  /// @nodoc
+  @deprecated
   Future<String?> stopRecorder() async {
     _logger.d('FS:---> stopRecorder ');
     String? r;
@@ -864,6 +900,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// ```dart
   ///         myRecorder.setAudioFocus(focus: AudioFocus.requestFocusAndDuckOthers);
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> setAudioFocus(
       {AudioFocus focus = AudioFocus.requestFocusTransient,
       SessionCategory category = SessionCategory.playAndRecord,
@@ -912,6 +950,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// ```dart
   /// await myRecorder.pauseRecorder();
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> pauseRecorder() async {
     _logger.d('FS:---> pauseRecorder ');
     await _lock.synchronized(() async {
@@ -953,6 +993,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// ```dart
   /// await myRecorder.resumeRecorder();
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> resumeRecorder() async {
     _logger.d('FS:---> pausePlayer ');
     await _lock.synchronized(() async {
@@ -998,6 +1040,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   ///      await myPlayer.startPlayer(fromURI: 'foo');
   ///      await myRecorder.deleteRecord('foo');
   /// ```
+  /// @nodoc
+  @deprecated
   Future<bool?> deleteRecord({required String fileName}) async {
     _logger.d('FS:---> deleteRecord');
     await _waitOpen();
@@ -1017,6 +1061,8 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   /// the recorder.
   /// This verb is seldom used. Most of the time, the App will use the result
   /// of [stopRecorder()].
+  /// @nodoc
+  @deprecated
   Future<String?> getRecordURL({required String path}) async {
     await _waitOpen();
     if (_isInited != Initialized.fullyInitialized) {

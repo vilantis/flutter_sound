@@ -71,7 +71,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     super.initState();
     initializeDateFormatting();
     _getAssetData(
-      'assets/samples/sample.opus',
+      'assets/samples/sample.aac',
     ).then((value) => setState(() {
           buffer2 = value;
         }));
@@ -156,14 +156,14 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     setState(() {});
   }
 
-  // -------  Player2 play a OPUS file -----------------------
+  // -------  Player2 play a AAC file -----------------------
 
   void play2() async {
     await _mPlayer2!.setSubscriptionDuration(Duration(milliseconds: 10));
     _addListener2();
     await _mPlayer2!.startPlayer(
         fromDataBuffer: buffer2,
-        codec: Codec.opusOGG,
+        codec: Codec.aacADTS,
         whenFinished: () {
           setState(() {});
         });

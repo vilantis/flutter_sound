@@ -42,11 +42,15 @@ import 'package:path_provider/path_provider.dart';
 
 
 /// The FlutterSoundHelper singleton for accessing the helpers functions
+/// @nodoc
+@deprecated
 FlutterSoundHelper flutterSoundHelper =
     FlutterSoundHelper._internal(); // Singleton
 
 /// FlutterSoundHelper class is for handleing audio files and buffers.
 /// Most of those utilities use FFmpeg, so are not available in the LITE flavor of Flutter Sound.
+/// @nodoc
+@deprecated
 class FlutterSoundHelper {
   /// The FlutterSoundHelper Logger
   Logger logger = Logger(level: Level.debug);
@@ -61,6 +65,8 @@ class FlutterSoundHelper {
 // -------------------------------------------------------------------------------------------------------------
 
   /// The factory which returns the Singleton
+  /// @nodoc
+  @deprecated
   factory FlutterSoundHelper() {
     return flutterSoundHelper;
   }
@@ -70,6 +76,8 @@ class FlutterSoundHelper {
 
 //-------------------------------------------------------------------------------------------------------------
 
+  /// @nodoc
+  @deprecated
   void setLogLevel(Level theNewLogLevel) {
     logger = Logger(level: theNewLogLevel);
   }
@@ -77,17 +85,23 @@ class FlutterSoundHelper {
   /// To know during runtime if FFmpeg is linked with the App.
   ///
   /// returns true if FFmpeg is available (probably the FULL version of Flutter Sound)
+  /// @nodoc
+  @deprecated
   Future<bool> isFFmpegAvailable() async {
     if (kIsWeb) return false;
-    if (_flutterFFmpegConfig == null) {
-      _flutterFFmpegConfig = FlutterSoundFFmpegConfig(logger);
-      //await _flutterFFmpegConfig!.disableLogs(); // TODO
-      //await _flutterFFmpegConfig!.disableRedirection(); // TODO
-      var version = await _flutterFFmpegConfig!.getFFmpegVersion();
-      var platform = await _flutterFFmpegConfig!.getPlatform();
-      _ffmpegAvailable = (version != null && platform != null);
+    try {
+      if (_flutterFFmpegConfig == null) {
+        _flutterFFmpegConfig = FlutterSoundFFmpegConfig(logger);
+        //await _flutterFFmpegConfig!.disableLogs(); // TODO
+        //await _flutterFFmpegConfig!.disableRedirection(); // TODO
+        var version = await _flutterFFmpegConfig!.getFFmpegVersion();
+        var platform = await _flutterFFmpegConfig!.getPlatform();
+        _ffmpegAvailable = (version != null && platform != null);
+      }
+      return _ffmpegAvailable;
+    } catch(_) {
+      return false;
     }
-    return _ffmpegAvailable;
   }
 
   /// A wrapper for the great FFmpeg application.
@@ -100,6 +114,8 @@ class FlutterSoundHelper {
   /// and without any complain from the link-editor.
   ///
   /// Executes FFmpeg with `commandArguments` provided.
+  /// @nodoc
+  @deprecated
   Future<int?> executeFFmpegWithArguments(List<String?> arguments) async{
     if (! await isFFmpegAvailable())
       return 0;
@@ -114,6 +130,8 @@ class FlutterSoundHelper {
   /// and without any complain from the link-editor.
   ///
   /// This simple verb is used to get the result of the last FFmpeg command.
+  /// @nodoc
+  @deprecated
   Future<int?> getLastFFmpegReturnCode() async {
     if (! await isFFmpegAvailable())
       return 0;
@@ -129,6 +147,8 @@ class FlutterSoundHelper {
   /// Returns log output of last executed command. Please note that disabling redirection using
   /// This method does not support executing multiple concurrent commands. If you execute multiple commands at the same time, this method will return output from all executions.
   /// `disableRedirection()` method also disables this functionality.
+  /// @nodoc
+  @deprecated
   Future<String?> getLastFFmpegCommandOutput() async {
     await isFFmpegAvailable();
     return _flutterFFmpegConfig!.getLastCommandOutput();
@@ -137,6 +157,8 @@ class FlutterSoundHelper {
   /// Various informations about the Audio specified by the `uri` parameter.
   ///
   /// The informations Map got with FFmpegGetMediaInformation() are [documented here](https://pub.dev/packages/flutter_ffmpeg).
+  /// @nodoc
+  @deprecated
   Future<Map<dynamic, dynamic>?> ffMpegGetMediaInformation(String uri) async {
     _flutterFFprobe ??= FlutterSoundFFprobe();
     try {
@@ -151,6 +173,8 @@ class FlutterSoundHelper {
   ///
   /// This verb is used to get an estimation of the duration of a sound file.
   /// Be aware that it is just an estimation, based on the Codec used and the sample rate.
+  /// @nodoc
+  @deprecated
   Future<Duration?> duration(String uri) async {
     if (!await (flutterSoundHelper.isFFmpegAvailable())) return null;
     var info = await ffMpegGetMediaInformation(uri);
@@ -172,6 +196,8 @@ class FlutterSoundHelper {
   /// This verb is usefull to convert a Wave file to a Raw PCM file.
   ///
   /// Note that this verb is not asynchronous and does not return a Future.
+  /// @nodoc
+  @deprecated
   Future<void> waveToPCM({
     required String inputFile,
     required String outputFile,
@@ -190,6 +216,8 @@ class FlutterSoundHelper {
   /// Remove WAVE header in front of the Wave buffer.
   ///
   /// Note that this verb is not asynchronous and does not return a Future.
+  /// @nodoc
+  @deprecated
   Uint8List waveToPCMBuffer({
     required Uint8List inputBuffer,
   }) {
@@ -205,6 +233,8 @@ class FlutterSoundHelper {
   /// Note: the parameters `numChannels` and `sampleRate` **are mandatory, and must match the actual PCM data**.
   ///
   /// [See here](doc/codec.md#note-on-raw-pcm-and-wave-files) a discussion about `Raw PCM` and `WAVE` file format.
+  /// @nodoc
+  @deprecated
   Future<void> pcmToWave({
     required String inputFile,
     required String outputFile,
@@ -240,6 +270,8 @@ class FlutterSoundHelper {
   /// It adds a `Wave` envelop in front of the PCM buffer, so that the file can be played back with `startPlayerFromBuffer()`.
   ///
   /// Note: the parameters `numChannels` and `sampleRate` **are mandatory, and must match the actual PCM data**. [See here](doc/codec.md#note-on-raw-pcm-and-wave-files) a discussion about `Raw PCM` and `WAVE` file format.
+  /// @nodoc
+  @deprecated
   Future<Uint8List> pcmToWaveBuffer({
     required Uint8List inputBuffer,
     int numChannels = 1,
@@ -270,6 +302,8 @@ class FlutterSoundHelper {
     return Uint8List.fromList(buffer);
   }
 
+  /// @nodoc
+  @deprecated
   Future<String> _getPath(String? path) async {
     if (path == null) {
       return '';
@@ -293,6 +327,8 @@ class FlutterSoundHelper {
   /// Be careful : `outfile` and `outputCodec` must be compatible. The output file extension must be a correct file extension for the new format.
   ///
   /// Note : this verb uses FFmpeg and is not available int the LITE flavor of Flutter Sound.
+  /// @nodoc
+  @deprecated
   Future<bool> convertFile(String? inputFile, Codec? inputCodec,
       String outputFile, Codec outputCodec) async {
     if (! await isFFmpegAvailable())

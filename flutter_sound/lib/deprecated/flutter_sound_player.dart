@@ -137,6 +137,8 @@ const List<Codec> _tabWebConvert = [
 /// This verb will call [stopPlayer()] if necessary.
 ///
 /// ----------------------------------------------------------------------------------------------------
+/// @nodoc
+@deprecated
 class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// The FlutterSoundPlayerLogger
   Logger _logger = Logger(level: Level.debug);
@@ -147,6 +149,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Used if the App wants to dynamically change the Log Level.
   /// Seldom used. Most of the time the Log Level is specified during the constructor.
+  /// @nodoc
+  @deprecated
   Future<void> setLogLevel(Level aLevel) async {
     _logLevel = aLevel;
     _logger = Logger(level: aLevel);
@@ -167,6 +171,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   static bool _reStarted = true;
 
   ///
+  /// @nodoc
+  @deprecated
   StreamSubscription<Food>?
       _foodStreamSubscription; // ignore: cancel_subscriptions
 
@@ -186,7 +192,9 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Instanciate a new Flutter Sound player.
   /// The optional paramater `Level logLevel` specify the Logger Level you are interested by.
-  /* ctor */ FlutterSoundPlayer({Level logLevel = Level.debug}) {
+  /// @nodoc
+  @deprecated
+  FlutterSoundPlayer({Level logLevel = Level.debug}) {
     _logger = Logger(level: logLevel);
     _logger.d('ctor: FlutterSoundPlayer()');
   }
@@ -195,6 +203,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void updateProgress({
     int duration = 0,
@@ -213,6 +222,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void pause(int state) async {
     _logger.d('FS:---> pause ');
@@ -228,6 +238,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void resume(int state) async {
     _logger.d('FS:---> resume');
@@ -243,6 +254,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void skipBackward(int state) async {
     _logger.d('FS:---> skipBackward ');
@@ -258,6 +270,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void skipForward(int state) async {
     _logger.d('FS:---> skipForward ');
@@ -272,6 +285,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void updatePlaybackState(int state) {
     if (state >= 0 && state < PlayerState.values.length) {
@@ -281,6 +295,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void needSomeFood(int ln) {
     assert(ln >= 0);
@@ -289,6 +304,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void audioPlayerFinished(int state) async {
     _logger.d('FS:---> audioPlayerFinished');
@@ -307,6 +323,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void openPlayerCompleted(int state, bool success) {
     _logger.d('---> openPlayerCompleted: $success');
@@ -329,6 +346,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void closePlayerCompleted(int state, bool success) {
     _logger.d('---> closePlayerCompleted');
@@ -352,6 +370,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void pausePlayerCompleted(int state, bool success) {
     _logger.d('---> pausePlayerCompleted: $success');
@@ -371,6 +390,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void resumePlayerCompleted(int state, bool success) {
     _logger.d('---> resumePlayerCompleted: $success');
@@ -390,6 +410,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void startPlayerCompleted(int state, bool success, int duration) {
     _logger.d('---> startPlayerCompleted: $success');
@@ -409,6 +430,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
+  @deprecated
   @override
   void stopPlayerCompleted(int state, bool success) {
     _logger.d('---> stopPlayerCompleted: $success');
@@ -473,7 +495,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
     }
   }
 
-  @override
+  /// @nodoc
+  @deprecated
   void log(Level logLevel, String msg) {
     _logger.log(logLevel, msg);
   }
@@ -511,6 +534,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// myPlayer.foodSink.add(FoodData(myOtherBuffer));
   /// myPlayer.foodSink.add(FoodEvent((){_mPlayer.stopPlayer();}));
   /// ```
+  /// @nodoc
+  @deprecated
   StreamSink<Food>? get foodSink =>
       _foodStreamController != null ? _foodStreamController!.sink : null;
 
@@ -532,10 +557,14 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///                 ...
   ///         }
   /// ```
+  /// @nodoc
+  @deprecated
   Stream<PlaybackDisposition>? get onProgress =>
       _playerController != null ? _playerController!.stream : null;
 
   /// Return true if the Player has been open
+  /// @nodoc
+  @deprecated
   bool isOpen() {
     return (_isInited == Initialized.fullyInitialized);
   }
@@ -561,11 +590,15 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///
   /// If you pause the audio then no updates will be sent to the
   /// stream.
+  /// @nodoc
+  @deprecated
   Stream<PlaybackDisposition>? dispositionStream() {
     return _playerController != null ? _playerController!.stream : null;
   }
 
   /// User callback "whenFinished:"
+  /// @nodoc
+  @deprecated
   TWhenFinished? _audioPlayerFinishedPlaying;
 
   /// Test the Player State
@@ -613,6 +646,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///     await myPlayer.closeAudioSession();
   ///     myPlayer = null;
   /// ```
+  /// @nodoc
+  @deprecated
   Future<FlutterSoundPlayer?> openAudioSession({
     AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
     SessionCategory category = SessionCategory.playAndRecord,
@@ -712,6 +747,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   ///         myPlayer.setAudioFocus(focus: AudioFocus.requestFocusAndDuckOthers);
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> setAudioFocus({
     AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
     SessionCategory category = SessionCategory.playback,
@@ -776,6 +813,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///         super.dispose();
   /// }
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> closeAudioSession() async {
     await _lock.synchronized(() async {
       await _closeAudioSession();
@@ -824,6 +863,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// but will use the [playerState] variable.
   /// This is seldom used when the App wants to get
   /// an updated value the background state.
+  /// @nodoc
+  @deprecated
   Future<PlayerState> getPlayerState() async {
     await _waitOpen();
     if (_isInited != Initialized.fullyInitialized) {
@@ -844,6 +885,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///         Duration progress = (await getProgress())['progress'];
   ///         Duration duration = (await getProgress())['duration'];
   /// ```
+  /// @nodoc
+  @deprecated
   Future<Map<String, Duration>> getProgress() async {
     await _waitOpen();
     if (_isInited != Initialized.fullyInitialized) {
@@ -873,6 +916,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   ///         if ( await myPlayer.isDecoderSupported(Codec.opusOGG) ) doSomething;
   /// ```
+  /// @nodoc
+  @deprecated
   Future<bool> isDecoderSupported(Codec codec) async {
     var result = false;
     _logger.d('FS:---> isDecoderSupported ');
@@ -916,6 +961,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// myPlayer.setSubscriptionDuration(Duration(milliseconds: 100));
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> setSubscriptionDuration(Duration duration) async {
     _logger.d('FS:---> setSubscriptionDuration ');
     await _waitOpen();
@@ -1041,6 +1088,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///                 },
   ///     );
   /// ```
+  /// @nodoc
+  @deprecated
   Future<Duration?> startPlayer({
     String? fromURI,
     Uint8List? fromDataBuffer,
@@ -1158,6 +1207,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///     ...
   ///     myPlayer.stopPlayer();
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> startPlayerFromMic({
     int sampleRate = 44000, // The default value is probably a good choice.
     int numChannels =
@@ -1240,6 +1291,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///
   ///   myPlayer.foodSink.add(FoodEvent((){_mPlayer.stopPlayer();}));
   ///   ```
+  /// @nodoc
+  @deprecated
   Future<void> startPlayerFromStream({
     Codec codec = Codec.pcm16,
     int numChannels = 1,
@@ -1311,6 +1364,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///
   ///  await myPlayer.stopPlayer();
   ///  ```
+  /// @nodoc
+  @deprecated
   Future<void> feedFromStream(Uint8List buffer) async {
     await _feedFromStream(buffer);
   }
@@ -1407,6 +1462,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///   },
   ///   );
   ///   ```
+  /// @nodoc
+  @deprecated
   Future<Duration?> startPlayerFromTrack(
     Track track, {
     TonSkip? onSkipForward,
@@ -1519,6 +1576,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///  Track track = Track( codec: Codec.opusOGG, trackPath: fileUri, trackAuthor: '3 Inches of Blood', trackTitle: 'Axes of Evil', albumArtAsset: albumArt );
   ///  await nowPlaying(Track);
   ///  ```
+  /// @nodoc
+  @deprecated
   Future<void> nowPlaying(
     Track track, {
     Duration? duration,
@@ -1590,6 +1649,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///                 _playerSubscription = null;
   ///         }
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> stopPlayer() async {
     await _lock.synchronized(() async {
       await _stopPlayer();
@@ -1655,6 +1716,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// await myPlayer.pausePlayer();
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> pausePlayer() async {
     _logger.d('FS:---> pausePlayer ');
     await _lock.synchronized(() async {
@@ -1699,6 +1762,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// await myPlayer.resumePlayer();
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> resumePlayer() async {
     _logger.d('FS:---> resumePlayer');
     await _lock.synchronized(() async {
@@ -1743,6 +1808,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// await myPlayer.seekToPlayer(Duration(milliseconds: milliSecs));
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> seekToPlayer(Duration duration) async {
     await _lock.synchronized(() async {
       await _seekToPlayer(duration);
@@ -1772,6 +1839,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// await myPlayer.setVolume(0.1);
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> setVolume(double volume) async {
     await _lock.synchronized(() async {
       await _setVolume(volume);
@@ -1808,6 +1877,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// ```dart
   /// await myPlayer.setSpeed(0.8);
   /// ```
+  /// @nodoc
+  @deprecated
   Future<void> setSpeed(double speed) async {
     await _lock.synchronized(() async {
       await _setSpeed(speed);
@@ -1844,6 +1915,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   ///         Duration duration = (await getProgress())['duration'];
   ///         setUIProgressBar(progress: Duration(milliseconds: progress.milliseconds - 500), duration: duration)
   /// ````
+  /// @nodoc
+  @deprecated
   Future<void> setUIProgressBar({
     Duration? duration,
     Duration? progress,
@@ -1872,6 +1945,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// Get the resource path.
   ///
   /// This verb should probably not be here...
+  /// @nodoc
+  @deprecated
   Future<String?> getResourcePath() async {
     await _waitOpen();
     if (_isInited != Initialized.fullyInitialized) {
@@ -1892,6 +1967,8 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
 
 /// FoodData are the regular objects received from a recorder when recording to a Dart Stream
 /// or sent to a player when playing from a Dart Stream
+/// @nodoc
+@deprecated
 class FoodData extends Food {
   /// the data to be sent (or received)
   Uint8List? data;
@@ -1900,12 +1977,16 @@ class FoodData extends Food {
   /* ctor */ FoodData(this.data);
 
   /// Used internally by Flutter Sound
+  /// @nodoc
+  @deprecated
   @override
   Future<void> exec(FlutterSoundPlayer player) => player.feedFromStream(data!);
 }
 
 /// foodEvent is a special kin of food which allows to re-synchronize a stream
 /// with a player that play from a Dart Stream
+/// @nodoc
+@deprecated
 class FoodEvent extends Food {
   /// The callback to fire when this food is synchronized with the player
   Function on;
@@ -1926,6 +2007,8 @@ class FoodEvent extends Food {
 /// This class is extended by
 /// - [FoodData] and
 /// - [FoodEvent].
+/// @nodoc
+@deprecated
 abstract class Food {
   /// use internally by Flutter Sound
   Future<void> exec(FlutterSoundPlayer player);

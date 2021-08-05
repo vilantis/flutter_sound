@@ -124,8 +124,10 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
         _mRecorder!.isStopped &&
         _mPlayer!.isStopped);
 
-    await FlutterSoundHelper()
-        .convertFile(_mPathAAC, Codec.aacADTS, _mPathMP3, Codec.mp3);
+    if (!await FlutterSoundHelper().convertFile(_mPathAAC, Codec.aacADTS, _mPathMP3, Codec.mp3)) {
+      print('`convertFile` not successful');
+      return; // Something bad. Perhaps we are running the LITE flavor
+    }
     await _mPlayer!.startPlayer(
         codec: Codec.mp3,
         fromURI: _mPathMP3,
