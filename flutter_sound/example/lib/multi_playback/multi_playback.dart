@@ -46,9 +46,9 @@ class MultiPlayback extends StatefulWidget {
 }
 
 class _MultiPlaybackState extends State<MultiPlayback> {
-  FlutterSoundPlayer? _mPlayer1 = FlutterSoundPlayer();
-  FlutterSoundPlayer? _mPlayer2 = FlutterSoundPlayer();
-  FlutterSoundPlayer? _mPlayer3 = FlutterSoundPlayer();
+  TauPlayer? _mPlayer1 = TauPlayer();
+  TauPlayer? _mPlayer2 = TauPlayer();
+  TauPlayer? _mPlayer3 = TauPlayer();
   bool _mPlayer1IsInited = false;
   bool _mPlayer2IsInited = false;
   bool _mPlayer3IsInited = false;

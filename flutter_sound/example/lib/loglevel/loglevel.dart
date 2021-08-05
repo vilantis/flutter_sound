@@ -43,7 +43,7 @@ class LogLevel extends StatefulWidget {
 }
 
 class _LogLevelState extends State<LogLevel> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer(logLevel: Level.debug);
+  TauPlayer? _mPlayer = TauPlayer(logLevel: Level.debug);
   bool _mPlayerIsInited = false;
   Level theLogLevel = Level.debug;
 

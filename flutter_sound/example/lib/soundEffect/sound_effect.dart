@@ -43,7 +43,7 @@ class SoundEffect extends StatefulWidget {
 }
 
 class _SoundEffectState extends State<SoundEffect> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  TauPlayer? _mPlayer = TauPlayer();
   late bool _mPlayerIsInited;
   Uint8List? bimData;
   Uint8List? bamData;
@@ -57,13 +57,13 @@ class _SoundEffectState extends State<SoundEffect> {
 
   Future<void> init() async {
     await _mPlayer!.openAudioSession();
-    bimData = FlutterSoundHelper().waveToPCMBuffer(
+    bimData = TauHelper().waveToPCMBuffer(
       inputBuffer: await getAssetData(_bim),
     );
-    bamData = FlutterSoundHelper().waveToPCMBuffer(
+    bamData = TauHelper().waveToPCMBuffer(
       inputBuffer: await getAssetData(_bam),
     );
-    boumData = FlutterSoundHelper().waveToPCMBuffer(
+    boumData = TauHelper().waveToPCMBuffer(
       inputBuffer: await getAssetData(_boum),
     );
     await _mPlayer!.startPlayerFromStream(

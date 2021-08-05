@@ -111,7 +111,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   StreamController<RecordingDisposition>? _recorderController;
 
   /// A reference to the User Sink during `StartRecorder(toStream:...)`
-  StreamSink<Food>? _userStreamSink;
+  StreamSink<TauFood>? _userStreamSink;
 
   /// The current state of the Recorder
   RecorderState get recorderState => _recorderState;
@@ -163,7 +163,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   void recordingData({Uint8List? data}) {
     if (_userStreamSink != null) {
       //Uint8List data = call['recordingData'] as Uint8List;
-      _userStreamSink!.add(FoodData(data));
+      _userStreamSink!.add(TauFoodData(data));
     }
   }
 
@@ -622,7 +622,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   Future<void> startRecorder({
     Codec codec = Codec.defaultCodec,
     String? toFile,
-    StreamSink<Food>? toStream,
+    StreamSink<TauFood>? toStream,
     int sampleRate = 16000,
     int numChannels = 1,
     int bitRate = 16000,
@@ -646,7 +646,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   Future<void> _startRecorder({
     Codec codec = Codec.defaultCodec,
     String? toFile,
-    StreamSink<Food>? toStream,
+    StreamSink<TauFood>? toStream,
     int sampleRate = 16000,
     int numChannels = 1,
     int bitRate = 16000,

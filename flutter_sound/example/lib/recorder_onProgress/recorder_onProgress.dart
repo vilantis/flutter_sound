@@ -43,7 +43,7 @@ class RecorderOnProgress extends StatefulWidget {
 }
 
 class _RecorderOnProgressState extends State<RecorderOnProgress> {
-  final FlutterSoundRecorder _mRecorder = FlutterSoundRecorder();
+  final TauRecorder _mRecorder = TauRecorder();
   Codec _codec = Codec.aacMP4;
   String _mPath = 'tau_file.mp4';
   bool _mRecorderIsInited = false;
@@ -118,12 +118,12 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
 
   // -------  Here is the code to playback  -----------------------
 
-  void record(FlutterSoundRecorder? recorder) async {
+  void record(TauRecorder? recorder) async {
     await recorder!.startRecorder(codec: _codec, toFile: _mPath);
     setState(() {});
   }
 
-  Future<void> stopRecorder(FlutterSoundRecorder recorder) async {
+  Future<void> stopRecorder(TauRecorder recorder) async {
     await recorder.stopRecorder();
   }
 
@@ -139,7 +139,7 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
 
   // --------------------- UI -------------------
 
-  Fn? getPlaybackFn(FlutterSoundRecorder? recorder) {
+  Fn? getPlaybackFn(TauRecorder? recorder) {
     if (!_mRecorderIsInited) {
       return null;
     }

@@ -49,8 +49,8 @@ class ConvertToMp3 extends StatefulWidget {
 }
 
 class _ConvertToMp3State extends State<ConvertToMp3> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
+  TauPlayer? _mPlayer = TauPlayer();
+  TauRecorder? _mRecorder = TauRecorder();
   bool _mPlayerIsInited = false;
   bool _mRecorderIsInited = false;
   bool _mplaybackReady = false;
@@ -124,7 +124,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
         _mRecorder!.isStopped &&
         _mPlayer!.isStopped);
 
-    if (!await FlutterSoundHelper().convertFile(_mPathAAC, Codec.aacADTS, _mPathMP3, Codec.mp3)) {
+    if (!await TauHelper().convertFile(_mPathAAC, Codec.aacADTS, _mPathMP3, Codec.mp3)) {
       print('`convertFile` not successful');
       return; // Something bad. Perhaps we are running the LITE flavor
     }

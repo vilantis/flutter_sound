@@ -22,8 +22,8 @@ import 'package:flutter_sound_lite/flutter_sound.dart';
 
 /*
  *
- * ```streamLoop()``` is a very simple example which connect the FlutterSoundRecorder sink
- * to the FlutterSoundPlayer Stream.
+ * ```streamLoop()``` is a very simple example which connect the TauRecorder sink
+ * to the TauPlayer Stream.
  * Of course, we do not play to the loudspeaker to avoid a very unpleasant Larsen effect.
  * This example does not use a new StreamController, but use directly `foodStreamController`
  * from flutter_sound_player.dart.
@@ -43,8 +43,8 @@ class StreamLoop extends StatefulWidget {
 }
 
 class _StreamLoopState extends State<StreamLoop> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
+  TauPlayer? _mPlayer = TauPlayer();
+  TauRecorder? _mRecorder = TauRecorder();
   bool _isInited = false;
 
   Future<void> init() async {
@@ -64,7 +64,7 @@ class _StreamLoopState extends State<StreamLoop> {
   void initState() {
     super.initState();
     // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    // Do not access your TauPlayer or TauRecorder before the completion of the Future
     init().then((value) {
       setState(() {
         _isInited = true;

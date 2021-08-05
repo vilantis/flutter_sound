@@ -40,7 +40,7 @@ class PlayFromMic extends StatefulWidget {
 }
 
 class _PlayFromMicState extends State<PlayFromMic> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  TauPlayer? _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
 
   Future<void> open() async {
@@ -50,7 +50,7 @@ class _PlayFromMicState extends State<PlayFromMic> {
     }
 
     // Be careful : openAudioSession returns a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    // Do not access your TauPlayer or TauRecorder before the completion of the Future
     await _mPlayer!.openAudioSession(
       device: AudioDevice.blueToothA2DP,
       audioFlags: allowHeadset | allowEarPiece | allowBlueToothA2DP,

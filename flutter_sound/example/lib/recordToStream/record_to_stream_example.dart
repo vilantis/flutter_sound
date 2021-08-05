@@ -44,8 +44,8 @@ class RecordToStreamExample extends StatefulWidget {
 }
 
 class _RecordToStreamExampleState extends State<RecordToStreamExample> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
+  TauPlayer? _mPlayer = TauPlayer();
+  TauRecorder? _mRecorder = TauRecorder();
   bool _mPlayerIsInited = false;
   bool _mRecorderIsInited = false;
   bool _mplaybackReady = false;
@@ -67,7 +67,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   void initState() {
     super.initState();
     // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    // Do not access your TauPlayer or TauRecorder before the completion of the Future
     _mPlayer!.openAudioSession().then((value) {
       setState(() {
         _mPlayerIsInited = true;
@@ -103,10 +103,10 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   Future<void> record() async {
     assert(_mRecorderIsInited && _mPlayer!.isStopped);
     var sink = await createFile();
-    var recordingDataController = StreamController<Food>();
+    var recordingDataController = StreamController<TauFood>();
     _mRecordingDataSubscription =
         recordingDataController.stream.listen((buffer) {
-      if (buffer is FoodData) {
+      if (buffer is TauFoodData) {
         sink.add(buffer.data!);
       }
     });

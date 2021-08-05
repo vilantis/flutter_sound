@@ -44,8 +44,8 @@ class VolumeControl extends StatefulWidget {
 }
 
 class _VolumeControlState extends State<VolumeControl> {
-  final FlutterSoundPlayer _mPlayer1 = FlutterSoundPlayer();
-  final FlutterSoundPlayer _mPlayer2 = FlutterSoundPlayer();
+  final TauPlayer _mPlayer1 = TauPlayer();
+  final TauPlayer _mPlayer2 = TauPlayer();
   bool _mPlayerIsInited1 = false;
   bool _mPlayerIsInited2 = false;
   double _mVolume1 = 100.0;
@@ -81,7 +81,7 @@ class _VolumeControlState extends State<VolumeControl> {
 
   // -------  Here is the code to playback a remote file -----------------------
 
-  void play(FlutterSoundPlayer? player, String uri) async {
+  void play(TauPlayer? player, String uri) async {
     await player!.startPlayer(
         fromURI: uri,
         codec: Codec.mp3,
@@ -91,7 +91,7 @@ class _VolumeControlState extends State<VolumeControl> {
     setState(() {});
   }
 
-  Future<void> stopPlayer(FlutterSoundPlayer player) async {
+  Future<void> stopPlayer(TauPlayer player) async {
     await player.stopPlayer();
   }
 
@@ -119,7 +119,7 @@ class _VolumeControlState extends State<VolumeControl> {
 
   // --------------------- UI -------------------
 
-  Fn? getPlaybackFn(FlutterSoundPlayer? player, String uri) {
+  Fn? getPlaybackFn(TauPlayer? player, String uri) {
     if (!(_mPlayerIsInited1 && _mPlayerIsInited2)) {
       return null;
     }

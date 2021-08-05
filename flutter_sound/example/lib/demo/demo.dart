@@ -203,8 +203,8 @@ class _MyAppState extends State<Demo> {
   StreamSubscription? _playerSubscription;
   StreamSubscription? _recordingDataSubscription;
 
-  FlutterSoundPlayer playerModule = FlutterSoundPlayer();
-  FlutterSoundRecorder recorderModule = FlutterSoundRecorder();
+  TauPlayer playerModule = TauPlayer();
+  TauRecorder recorderModule = TauRecorder();
 
   String _recorderTxt = '00:00:00';
   String _playerTxt = '00:00:00';
@@ -222,7 +222,7 @@ class _MyAppState extends State<Demo> {
   bool _isAudioPlayer = false;
 
   double? _duration;
-  StreamController<Food>? recordingDataController;
+  StreamController<TauFood>? recordingDataController;
   IOSink? sink;
 
   Future<void> _initializeExample(bool withUI) async {
@@ -355,10 +355,10 @@ class _MyAppState extends State<Demo> {
         } else {
           sink = null; // TODO
         }
-        recordingDataController = StreamController<Food>();
+        recordingDataController = StreamController<TauFood>();
         _recordingDataSubscription =
             recordingDataController!.stream.listen((buffer) {
-          if (buffer is FoodData) {
+          if (buffer is TauFoodData) {
             sink!.add(buffer.data!);
           }
         });
@@ -412,7 +412,7 @@ class _MyAppState extends State<Demo> {
       case Media.file:
       case Media.buffer:
         var path = _path[_codec.index];
-        var d = path != null ? await flutterSoundHelper.duration(path) : null;
+        var d = path != null ? await tauHelper.duration(path) : null;
         _duration = d != null ? d.inMilliseconds / 1000.0 : null;
         break;
       case Media.asset:
@@ -613,7 +613,7 @@ class _MyAppState extends State<Demo> {
               });
         } else if (dataBuffer != null) {
           if (codec == Codec.pcm16) {
-            dataBuffer = await flutterSoundHelper.pcmToWaveBuffer(
+            dataBuffer = await tauHelper.pcmToWaveBuffer(
               inputBuffer: dataBuffer,
               numChannels: 1,
               sampleRate: (_codec == Codec.pcm16 && _media == Media.asset)

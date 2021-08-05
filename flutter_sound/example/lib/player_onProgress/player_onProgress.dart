@@ -43,7 +43,7 @@ class PlayerOnProgress extends StatefulWidget {
 }
 
 class _PlayerOnProgressState extends State<PlayerOnProgress> {
-  final FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
+  final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
   double _mSubscriptionDuration = 0;
   Uint8List? _boumData;
@@ -95,7 +95,7 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
 
   // -------  Here is the code to playback  -----------------------
 
-  void play(FlutterSoundPlayer? player) async {
+  void play(TauPlayer? player) async {
     await player!.startPlayer(
         fromDataBuffer: _boumData,
         codec: Codec.aacADTS,
@@ -105,7 +105,7 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
     setState(() {});
   }
 
-  Future<void> stopPlayer(FlutterSoundPlayer player) async {
+  Future<void> stopPlayer(TauPlayer player) async {
     await player.stopPlayer();
   }
 
@@ -121,7 +121,7 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
 
   // --------------------- UI -------------------
 
-  Fn? getPlaybackFn(FlutterSoundPlayer? player) {
+  Fn? getPlaybackFn(TauPlayer? player) {
     if (!_mPlayerIsInited) {
       return null;
     }

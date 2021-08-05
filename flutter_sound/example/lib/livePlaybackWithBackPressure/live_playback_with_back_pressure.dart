@@ -56,14 +56,14 @@ class LivePlaybackWithBackPressure extends StatefulWidget {
 
 class _LivePlaybackWithBackPressureState
     extends State<LivePlaybackWithBackPressure> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  TauPlayer? _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
 
   @override
   void initState() {
     super.initState();
     // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    // Do not access your TauPlayer or TauRecorder before the completion of the Future
     _mPlayer!.openAudioSession().then((value) {
       setState(() {
         _mPlayerIsInited = true;

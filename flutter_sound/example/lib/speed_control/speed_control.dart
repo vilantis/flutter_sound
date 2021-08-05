@@ -43,7 +43,7 @@ class SpeedControl extends StatefulWidget {
 }
 
 class _SpeedControlState extends State<SpeedControl> {
-  final FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
+  final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
   double _mSpeed = 100.0;
   Uint8List? _boumData;
@@ -82,7 +82,7 @@ class _SpeedControlState extends State<SpeedControl> {
 
   // -------  Here is the code to playback  -----------------------
 
-  void play(FlutterSoundPlayer? player) async {
+  void play(TauPlayer? player) async {
     await player!.startPlayer(
         fromDataBuffer: _boumData,
         codec: Codec.aacADTS,
@@ -92,7 +92,7 @@ class _SpeedControlState extends State<SpeedControl> {
     setState(() {});
   }
 
-  Future<void> stopPlayer(FlutterSoundPlayer player) async {
+  Future<void> stopPlayer(TauPlayer player) async {
     await player.stopPlayer();
   }
 
@@ -108,7 +108,7 @@ class _SpeedControlState extends State<SpeedControl> {
 
   // --------------------- UI -------------------
 
-  Fn? getPlaybackFn(FlutterSoundPlayer? player) {
+  Fn? getPlaybackFn(TauPlayer? player) {
     if (!_mPlayerIsInited) {
       return null;
     }

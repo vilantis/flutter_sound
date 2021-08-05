@@ -60,14 +60,14 @@ class LivePlaybackWithoutBackPressure extends StatefulWidget {
 
 class _LivePlaybackWithoutBackPressureState
     extends State<LivePlaybackWithoutBackPressure> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  TauPlayer? _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
 
   @override
   void initState() {
     super.initState();
     // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    // Do not access your TauPlayer or TauRecorder before the completion of the Future
     _mPlayer!.openAudioSession().then((value) {
       setState(() {
         _mPlayerIsInited = true;
@@ -91,7 +91,7 @@ class _LivePlaybackWithoutBackPressureState
     var totalLength = data.length;
     while (totalLength > 0 && _mPlayer != null && !_mPlayer!.isStopped) {
       var ln = totalLength > tBlockSize ? tBlockSize : totalLength;
-      _mPlayer!.foodSink!.add(FoodData(data.sublist(start, start + ln)));
+      _mPlayer!.foodSink!.add(TauFoodData(data.sublist(start, start + ln)));
       totalLength -= ln;
       start += ln;
     }
@@ -109,7 +109,7 @@ class _LivePlaybackWithoutBackPressureState
     feedHim(data);
     if (_mPlayer != null) {
       // We must not do stopPlayer() directely //await stopPlayer();
-      _mPlayer!.foodSink!.add(FoodEvent(() async {
+      _mPlayer!.foodSink!.add(TauFoodEvent(() async {
         await _mPlayer!.stopPlayer();
         setState(() {});
       }));

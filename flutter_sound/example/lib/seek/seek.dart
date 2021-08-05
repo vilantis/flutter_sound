@@ -44,7 +44,7 @@ class Seek extends StatefulWidget {
 }
 
 class _SeekState extends State<Seek> {
-  final FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
+  final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
   Uint8List? _boumData;
   StreamSubscription? _mPlayerSubscription;
@@ -93,7 +93,7 @@ class _SeekState extends State<Seek> {
     return asset.buffer.asUint8List();
   }
 
-  void play(FlutterSoundPlayer? player) async {
+  void play(TauPlayer? player) async {
     await player!.startPlayer(
         fromDataBuffer: _boumData,
         codec: Codec.aacADTS,
@@ -103,7 +103,7 @@ class _SeekState extends State<Seek> {
     setState(() {});
   }
 
-  Future<void> stopPlayer(FlutterSoundPlayer player) async {
+  Future<void> stopPlayer(TauPlayer player) async {
     await player.stopPlayer();
   }
 
@@ -123,7 +123,7 @@ class _SeekState extends State<Seek> {
 
   // --------------------- UI -------------------
 
-  Fn? getPlaybackFn(FlutterSoundPlayer? player) {
+  Fn? getPlaybackFn(TauPlayer? player) {
     if (!_mPlayerIsInited) {
       return null;
     }

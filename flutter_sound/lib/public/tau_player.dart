@@ -189,11 +189,11 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   static bool _reStarted = true;
 
   ///
-  StreamSubscription<_Food>?
+  StreamSubscription<TauFood>?
       _foodStreamSubscription; // ignore: cancel_subscriptions
 
   ///
-  StreamController<_Food>? _foodStreamController; //ignore: close_sinks
+  StreamController<TauFood>? _foodStreamController; //ignore: close_sinks
 
   ///
   Completer<int>? _needSomeFoodCompleter;
@@ -532,7 +532,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   /// myPlayer._FoodSink.add(_FoodData(myOtherBuffer));
   /// myPlayer._FoodSink.add(_FoodEvent((){_mPlayer.stopPlayer();}));
   /// ```
-  StreamSink<_Food>? get _FoodSink =>
+  StreamSink<TauFood>? get foodSink =>
       _foodStreamController != null ? _foodStreamController!.sink : null;
 
   /// The stream side of the _Food Controller
@@ -1284,8 +1284,8 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
     await _stop(); // Just in case
     _foodStreamController = StreamController();
-    _foodStreamSubscription = _foodStreamController!.stream.listen((_Food) {
-      _foodStreamSubscription!.pause(_Food.exec(this));
+    _foodStreamSubscription = _foodStreamController!.stream.listen((TauFood) {
+      _foodStreamSubscription!.pause(TauFood.exec(this));
     });
     if (_startPlayerCompleter != null) {
       _logger.w('Killing another startPlayer()');
@@ -2000,28 +2000,34 @@ class Track {
 
 
 
-/// _FoodData are the regular objects received from a recorder when recording to a Dart Stream
+/// FoodData are the regular objects received from a recorder when recording to a Dart Stream
 /// or sent to a player when playing from a Dart Stream
-class _FoodData extends _Food {
+/// @nodoc
+@deprecated
+class TauFoodData extends TauFood {
   /// the data to be sent (or received)
   Uint8List? data;
 
   /// The constructor, specifying the data to be sent or that has been received
-  /* ctor */ _FoodData(this.data);
+  /* ctor */ TauFoodData(this.data);
 
   /// Used internally by Flutter Sound
+  /// @nodoc
+  @deprecated
   @override
   Future<void> exec(TauPlayer player) => player.feedFromStream(data!);
 }
 
-/// _FoodEvent is a special kin of _Food which allows to re-synchronize a stream
+/// foodEvent is a special kin of food which allows to re-synchronize a stream
 /// with a player that play from a Dart Stream
-class _FoodEvent extends _Food {
-  /// The callback to fire when this _Food is synchronized with the player
+/// @nodoc
+@deprecated
+class TauFoodEvent extends TauFood {
+  /// The callback to fire when this food is synchronized with the player
   Function on;
 
   /// The constructor, specifying the callback which must be fired when synchronization is done
-  /* ctor */ _FoodEvent(this.on);
+  /* ctor */ TauFoodEvent(this.on);
 
   /// Used internally by Flutter Sound
   @override
@@ -2036,7 +2042,9 @@ class _FoodEvent extends _Food {
 /// This class is extended by
 /// - [FoodData] and
 /// - [FoodEvent].
-abstract class _Food {
+/// @nodoc
+@deprecated
+abstract class TauFood {
   /// use internally by Flutter Sound
   Future<void> exec(TauPlayer player);
 
@@ -2044,3 +2052,5 @@ abstract class _Food {
   void dummy(TauPlayer player) {} // Just to satisfy `dartanalyzer`
 
 }
+
+

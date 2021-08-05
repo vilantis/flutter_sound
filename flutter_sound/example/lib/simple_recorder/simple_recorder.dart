@@ -59,8 +59,8 @@ class SimpleRecorder extends StatefulWidget {
 class _SimpleRecorderState extends State<SimpleRecorder> {
   Codec _codec = Codec.aacMP4;
   String _mPath = 'tau_file.mp4';
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
-  FlutterSoundRecorder? _mRecorder = FlutterSoundRecorder();
+  TauPlayer? _mPlayer = TauPlayer();
+  TauRecorder? _mRecorder = TauRecorder();
   bool _mPlayerIsInited = false;
   bool _mRecorderIsInited = false;
   bool _mplaybackReady = false;

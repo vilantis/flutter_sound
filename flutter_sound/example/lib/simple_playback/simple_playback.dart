@@ -42,7 +42,7 @@ class SimplePlayback extends StatefulWidget {
 }
 
 class _SimplePlaybackState extends State<SimplePlayback> {
-  FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  TauPlayer? _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
 
   @override
