@@ -68,7 +68,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     super.initState();
     // Be careful : openAudioSession return a Future.
     // Do not access your TauPlayer or TauRecorder before the completion of the Future
-    _mPlayer!.openAudioSession().then((value) {
+    _mPlayer!.open().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
@@ -79,7 +79,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   @override
   void dispose() {
     stopPlayer();
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     stopRecorder();

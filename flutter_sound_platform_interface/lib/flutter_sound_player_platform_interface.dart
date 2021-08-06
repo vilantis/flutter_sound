@@ -128,6 +128,19 @@ abstract class FlutterSoundPlayerPlatform extends PlatformInterface {
       return cb;
   }
 
+  int numberOfOpenSessions()
+  {
+    var n = 0;
+    for (var i = 0; i < _slots.length; ++i)
+    {
+      if (_slots[i] != null)
+      {
+        ++n;
+      }
+    }
+    return n;
+  }
+
   //===================================================================================================================================================
 
   Future<void>?   setLogLevel(FlutterSoundPlayerCallback callback, Level loglevel)

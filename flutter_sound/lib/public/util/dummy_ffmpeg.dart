@@ -21,31 +21,34 @@
 ///
 /// --------------------
 ///
-/// {@category Utilities}
-library helper;
 
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
-import 'package:logger/logger.dart' show Level, Logger;
-
-import '../../flutter_sound.dart';
-import 'wave_header.dart';
-import 'package:path_provider/path_provider.dart';
 
 
+/// @nodoc
+@deprecated
 class FlutterFFprobe {
   Future<int> executeWithArguments(List<dynamic> arguments) async => 0;
   Future<MediaInformation> getMediaInformation(String path) async => MediaInformation();
 
   }
 
+/// @nodoc
+@deprecated
 class FlutterFFmpeg {
   Future<int> executeWithArguments(List<dynamic>? arguments) async => 0;
 
 }
 
+/// @nodoc
+@deprecated
 class MediaInformation {
   Map getAllProperties() => {};
+}
+
+/// @nodoc
+@deprecated
+class FlutterFFmpegConfig {
+  Future<String> getLastCommandOutput() async => 'Error';
+  Future<int> getLastReturnCode() async => 0;
 }

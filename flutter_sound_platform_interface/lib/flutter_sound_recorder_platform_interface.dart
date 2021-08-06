@@ -146,6 +146,20 @@ abstract class FlutterSoundRecorderPlatform extends PlatformInterface {
   }
 
 
+  int numberOfOpenSessions()
+  {
+    var n = 0;
+    for (var i = 0; i < _slots.length; ++i)
+    {
+      if (_slots[i] != null)
+      {
+        ++n;
+      }
+    }
+    return n;
+  }
+
+
 
   Future<void>?   setLogLevel(FlutterSoundRecorderCallback callback, Level loglevel)
   {

@@ -48,7 +48,7 @@ class _SimplePlaybackState extends State<SimplePlayback> {
   @override
   void initState() {
     super.initState();
-    _mPlayer!.openAudioSession().then((value) {
+    _mPlayer!.open().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
@@ -59,7 +59,7 @@ class _SimplePlaybackState extends State<SimplePlayback> {
   void dispose() {
     stopPlayer();
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     super.dispose();

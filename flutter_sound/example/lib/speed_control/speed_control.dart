@@ -63,13 +63,13 @@ class _SpeedControlState extends State<SpeedControl> {
     stopPlayer(_mPlayer);
 
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mPlayer.closeAudioSession();
+    _mPlayer.close();
 
     super.dispose();
   }
 
   Future<void> init() async {
-    await _mPlayer.openAudioSession();
+    await _mPlayer.open();
     await _mPlayer.setSpeed(
         1.0); // This dummy instruction is MANDATORY on iOS, before the first `startRecorder()`.
     _boumData = await getAssetData(_boum);

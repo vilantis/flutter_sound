@@ -66,7 +66,7 @@ class _SeekState extends State<Seek> {
     cancelPlayerSubscriptions();
 
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mPlayer.closeAudioSession();
+    _mPlayer.close();
 
     super.dispose();
   }
@@ -79,7 +79,7 @@ class _SeekState extends State<Seek> {
   }
 
   Future<void> init() async {
-    await _mPlayer.openAudioSession();
+    await _mPlayer.open();
     await _mPlayer.setSubscriptionDuration(Duration(milliseconds: 50));
     _boumData = await getAssetData(_boum);
     _mPlayerSubscription = _mPlayer.onProgress!.listen((e) {

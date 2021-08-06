@@ -59,7 +59,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
 
   @override
   void initState() {
-    _mPlayer!.openAudioSession().then((value) {
+    _mPlayer!.open().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
@@ -75,7 +75,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
 
   @override
   void dispose() {
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     _mRecorder!.closeAudioSession();

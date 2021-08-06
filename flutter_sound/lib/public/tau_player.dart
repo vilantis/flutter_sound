@@ -136,36 +136,69 @@ const List<Codec> _tabWebConvert = [
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
-/// A Player is an object that can playback from various sources.
+/// A Player is an object that can playback from Files, Buffers and Assets. Players do not manage RAW PCM data.
+/// Players play to a speaker or a headset.
+/// A Player is a High level OS object. It corresponds to an AVAudioPlayer on iOS and a MediaPlayer on Android.
+/// The App can create several Players. Each player must be independently opened and closed.
+/// Each Player manages its own playback, with its own sound volume, its own seekToPlayer and its own set of callbacks.
+/// When you have finished with a Player, you must close it.
+/// Opening a player takes resources inside the OS. Those resources are freed with the verb [close()].
 ///
 /// ----------------------------------------------------------------------------------------------------
 ///
 /// Using a player is very simple :
 ///
-/// 1. Create a new `FlutterSoundPlayer`
+/// 1. Create a new [TauPlayer()]
 ///
-/// 2. Open it with [openAudioSession()]
+/// 2. Open it with [open()]
 ///
-/// 3. Start your playback with [startPlayer()].
+/// 3. Start your playback with [play()].
 ///
 /// 4. Use the various verbs (optional):
-///    - [pausePlayer()]
-///    - [resumePlayer()]
+///    - [pause()]
+///    - [resume()]
 ///    - ...
 ///
-/// 5. Stop your player : [stopPlayer()]
+/// 5. Stop your player : [stop()]
 ///
-/// 6. Release your player when you have finished with it : [closeAudioSession()].
-/// This verb will call [stopPlayer()] if necessary.
+/// 6. Release your player when you have finished with it : [close()].
+/// This verb will call [stop()] if necessary.
 ///
 /// ----------------------------------------------------------------------------------------------------
 class TauPlayer implements FlutterSoundPlayerCallback {
-  /// The FlutterSoundPlayerLogger
-  Logger _logger = Logger(level: Level.debug);
-  Level _logLevel = Level.debug;
 
-  /// The FlutterSoundPlayerLogger Logger getter
+
+  TonSkip? _onSkipForward; // User callback "onPaused:"
+  TonSkip? _onSkipBackward; // User callback "onPaused:"
+  TonPaused? _onPaused; // user callback "whenPause:"
+  static bool _reStarted = true;
+
+  ///
+  StreamSubscription<TauFood>?
+      _foodStreamSubscription; // ignore: cancel_subscriptions
+
+  ///
+  StreamController<TauFood>? _foodStreamController; //ignore: close_sinks
+
+  //============================================ New API ===================================================================
+
+
+  /// Instanciate a new TauPlayer.
+  /// The optional parameter [logLevel] specify the Logger Level you are interested by.
+  /* ctor */ TauPlayer({Level logLevel = Level.debug}) {
+    _logger = Logger(level: logLevel);
+    _logger.d('ctor: TauPlayer()');
+  }
+
+
+  /// The TauPlayerLogger Logger getter
   Logger get logger => _logger;
+
+  /// True if the Player has been open
+  bool get isOpen => _isInited ;
+
+
+
 
   /// Used if the App wants to dynamically change the Log Level.
   /// Seldom used. Most of the time the Log Level is specified during the constructor.
@@ -182,23 +215,263 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     });
   }
 
-  TonSkip? _onSkipForward; // User callback "onPaused:"
-  TonSkip? _onSkipBackward; // User callback "onPaused:"
-  TonPaused? _onPaused; // user callback "whenPause:"
+  /// Open the Player.
+  ///
+  /// A player must be opened before used. A player correspond to an Audio Session.
+  /// A Player manages its own playback, with its own sound volume, its own seekToPlayer and its own set of callbacks.
+  /// A Player is a High level OS object. It corresponds to an AVAudioPlayer on iOS and a MediaPlayer on Android.
+  /// Players play Files, Buffers and Assets. Players do not manage RAW PCM data.
+  ///
+  /// The App can create several Players. Each player must be independently opened and closed.
+  /// When you have finished with a Player, you must close it.
+  /// Opening a player takes resources inside the OS. Those resources are freed with the verb [close()].
+  /// Returns a Future, but the App does not need to wait the completion of this future before doing a [start()].
+  /// The Future will be automaticaly awaited by [start()]
+  ///
+  /// - [withShadeUI] : true if the App wants to show an UI on the lock screen. (Ignored on Flutter Web).
+  /// - [focus] : What to do with the focus. Useful if you want to open a player and at the same time acquire the focus.
+  /// But be aware that the focus is a global resource for the App:
+  /// If you have several players, you cannot handle their focus independantely.
+  /// If this parameter is not specified, the Focus will be acquired with stop others
+  ///
+  /// *Example:*
+  /// ```dart
+  ///     myPlayer = await TauPlayer().open();
+  ///
+  ///     ...
+  ///     (do something with myPlayer)
+  ///     ...
+  ///
+  ///     await myPlayer.close();
+  ///     myPlayer = null;
+  /// ```
+  Future<TauPlayer?> open({
+    AudioFocus? focus,
+    SessionCategory category = SessionCategory.playAndRecord,
+    SessionMode mode = SessionMode.modeDefault,
+    AudioDevice device = AudioDevice.speaker,
+    int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
+    bool withShadeUI = false,
+  }) async {
+    if (_isInited ) {
+      return this;
+    }
+    TauPlayer? r;
+    await _lock.synchronized(() async {
+      r = await _open(
+        focus: focus,
+        category: category,
+        mode: mode,
+        device: device,
+        audioFlags: audioFlags,
+        withShadeUI: withShadeUI,
+      );
+    });
+    return r;
+  }
+
+  /// Close an open session.
+  ///
+  /// Must be called when finished with a Player, to release all the resources.
+  /// It is safe to call this procedure at any time.
+  /// - If the Player is not open, this verb will do nothing
+  /// - If the Player is currently in play or pause mode, it will be stopped before.
+  ///
+  /// If there is no more Player open and the parameter [keepFocus] is not set
+  /// then the focus is abandoned
+  ///
+  /// example:
+  /// ```dart
+  /// @override
+  /// void dispose()
+  /// {
+  ///         if (myPlayer != null)
+  ///         {
+  ///             myPlayer.close();
+  ///             myPlayer = null;
+  ///         }
+  ///         super.dispose();
+  /// }
+  /// ```
+  Future<void> close({bool keepFocus = false,}) async {
+    await _lock.synchronized(() async {
+      await _close(keepFocus: keepFocus);
+    });
+  }
+
+  /// setAudioFocus is used to modify the state of the Focus.
+  /// Very often, the App will not use this verb and will specify the focus value
+  /// during the [open()] and [close()] verbs.
+  /// If the App does not have the focus when it does a [start()]
+  /// it automaticaly gets the focus `AudioFocus.requestFocusAndStopOthers`,
+  /// and releases the focus automaticaly when the Player is stopped.
+  ///
+  /// Be aware that the focus is a global resource for the App:
+  /// If you have several players, you cannot handle their focus independantely.
+  ///
+  /// *Example:*
+  /// ```dart
+  ///         myPlayer.setFocus(focus: AudioFocus.requestFocusAndDuckOthers);
+  /// ```
+  Future<void> setAudioFocus({
+    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
+    SessionCategory category = SessionCategory.playback,
+    SessionMode mode = SessionMode.modeDefault,
+    AudioDevice device = AudioDevice.speaker,
+    int audioFlags =
+    outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
+  }) async {
+    await _lock.synchronized(() async {
+      await _setAudioFocus(
+        focus: focus,
+        category: category,
+        mode: mode,
+        device: device,
+        audioFlags: audioFlags,
+      );
+    });
+  }
+
+
+  //--------------------------------------------- Locals --------------------------------------------------------------------
+
+  /// Private variables
+  Logger _logger = Logger(level: Level.debug);
+  Level _logLevel = Level.debug;
   final _lock = Lock();
-  static bool _reStarted = true;
+  bool _isInited = false;
+  static bool _hasFocus = false;
 
-  ///
-  StreamSubscription<TauFood>?
-      _foodStreamSubscription; // ignore: cancel_subscriptions
 
-  ///
-  StreamController<TauFood>? _foodStreamController; //ignore: close_sinks
+  Future<TauPlayer> _open({
+    AudioFocus? focus ,
+    SessionCategory category = SessionCategory.playAndRecord,
+    SessionMode mode = SessionMode.modeDefault,
+    AudioDevice device = AudioDevice.speaker,
+    int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
+    bool withShadeUI = false,
+  }) async {
+    _logger.d('FS:---> open()');
+    while (_openPlayerCompleter != null) {
+      _logger.w('Another openPlayer() in progress');
+      await _openPlayerCompleter!.future;
+    }
 
-  ///
+    Completer<TauPlayer>? completer;
+    if (_isInited ) {
+      throw Exception('Player is already open');
+    }
+
+    if (_reStarted) {
+      // Perhaps a Hot Restart ?  We must reset the plugin
+      _logger.d('Resetting Tau Player Plugin');
+      _reStarted = false;
+      await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
+    }
+
+    focus ??= _hasFocus ? AudioFocus.requestFocusAndStopOthers : AudioFocus.doNotRequestFocus;
+    FlutterSoundPlayerPlatform.instance.openSession(this);
+    _setPlayerCallback();
+    assert(_openPlayerCompleter == null);
+    _openPlayerCompleter = Completer<TauPlayer>();
+    completer = _openPlayerCompleter;
+    try {
+      var state = await FlutterSoundPlayerPlatform.instance.openPlayer(this,
+          logLevel: _logLevel,
+          focus: focus,
+          audioFlags: audioFlags,
+          category: category,
+          device: device,
+          mode: mode,
+          withUI: withShadeUI);
+      if (focus != AudioFocus.doNotRequestFocus) {
+        _hasFocus = focus != AudioFocus.abandonFocus;
+      }
+
+      _playerState = PlayerState.values[state];
+
+    } on Exception {
+      _openPlayerCompleter = null;
+      rethrow;
+    }
+    _logger.d('FS:<--- open()');
+    return completer!.future;
+  }
+
+
+
+
+  Future<void> _close({bool keepFocus = false,}) async {
+    _logger.d('FS:---> close() ');
+
+    // If another closePlayer() is already in progress, wait until finished
+    while (_closePlayerCompleter != null) {
+      _logger.w('Another closePlayer() in progress');
+      await _closePlayerCompleter!.future;
+    }
+
+    if (!_isInited ) {
+      // Already closed
+      _logger.d('Player already close');
+      return;
+    }
+
+    Completer<void>? completer;
+    try {
+      await _stop(); // Stop the player if running
+
+      _removePlayerCallback();
+      assert(_closePlayerCompleter == null);
+      _closePlayerCompleter = Completer<void>();
+      completer = _closePlayerCompleter;
+      await FlutterSoundPlayerPlatform.instance.closePlayer(this);
+      if (FlutterSoundPlayerPlatform.instance.numberOfOpenSessions() <= 1 && !keepFocus && _hasFocus) {
+        await _setAudioFocus(focus: AudioFocus.abandonFocus); // Abandon the focus
+      }
+      FlutterSoundPlayerPlatform.instance.closeSession(this);
+    } on Exception {
+      _closePlayerCompleter = null;
+      rethrow;
+    }
+    _logger.d('FS:<--- close() ');
+    return completer!.future;
+  }
+
+
+
+  Future<void> _setAudioFocus({
+    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
+    SessionCategory category = SessionCategory.playback,
+    SessionMode mode = SessionMode.modeDefault,
+    AudioDevice device = AudioDevice.speaker,
+    int audioFlags =
+    outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
+  }) async {
+    _logger.d('FS:---> setAudioFocus ');
+    await _waitOpen();
+    if (!_isInited ) {
+      throw Exception('Player is not open');
+    }
+    if (focus != AudioFocus.doNotRequestFocus) {
+      _hasFocus = focus != AudioFocus.abandonFocus;
+    }
+    var state = await FlutterSoundPlayerPlatform.instance.setAudioFocus(
+      this,
+      focus: focus,
+      category: category,
+      mode: mode,
+      audioFlags: audioFlags,
+      device: device,
+    );
+    _playerState = PlayerState.values[state];
+    _logger.d('FS:<--- setAudioFocus ');
+  }
+
+
+  //===================================  Callbacks ================================================================
+
+  /// Completers
   Completer<int>? _needSomeFoodCompleter;
-
-  ///
   Completer<Duration>? _startPlayerCompleter;
   Completer<void>? _pausePlayerCompleter;
   Completer<void>? _resumePlayerCompleter;
@@ -206,14 +479,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   Completer<void>? _closePlayerCompleter;
   Completer<TauPlayer>? _openPlayerCompleter;
 
-  /// Instanciate a new Flutter Sound player.
-  /// The optional paramater `Level logLevel` specify the Logger Level you are interested by.
-  /* ctor */ TauPlayer({Level logLevel = Level.debug}) {
-    _logger = Logger(level: logLevel);
-    _logger.d('ctor: TauPlayer()');
-  }
-
-  //===================================  Callbacks ================================================================
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
@@ -241,7 +506,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     await _lock.synchronized(() async {
       _playerState = PlayerState.values[state];
       if (_onPaused != null) // Probably always true
-      {
+          {
         _onPaused!(true);
       }
     });
@@ -256,7 +521,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     await _lock.synchronized(() async {
       _playerState = PlayerState.values[state];
       if (_onPaused != null) // Probably always true
-      {
+          {
         _onPaused!(false);
       }
     });
@@ -499,11 +764,9 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     _logger.log(logLevel, msg);
   }
 
-  //===============================================================================================================
 
-  /// Do not use. Should be a private variable
-  /// @nodoc
-  bool _isInited = false;
+  //============================================= Old API ==================================================================
+
 
   ///
   PlayerState _playerState = PlayerState.isStopped;
@@ -556,11 +819,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   Stream<PlaybackDisposition>? get onProgress =>
       _playerController != null ? _playerController!.stream : null;
 
-  /// Return true if the Player has been open
-  bool isOpen() {
-    return _isInited ;
-  }
-
   /// Provides a stream of dispositions which
   /// provide updated position and duration
   /// as the audio is played.
@@ -606,232 +864,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     if (!_isInited ) {
       throw Exception('Player is not open');
     }
-  }
-
-  /// Open the Player.
-  ///
-  /// A player must be opened before used. A player correspond to an Audio Session. With other words, you must *open* the Audio Session before using it.
-  /// When you have finished with a Player, you must close it. With other words, you must close your Audio Session.
-  /// Opening a player takes resources inside the OS. Those resources are freed with the verb `closeAudioSession()`.
-  /// Returns a Future, but the App does not need to wait the completion of this future before doing a [startPlayer()].
-  /// The Future will be automaticaly waited by [startPlayer()]
-  ///
-  /// - [focus] : What to do with others App if they have already the Focus
-  /// - [category] : An optional parameter for iOS. See [iOS documentation](https://developer.apple.com/documentation/avfoundation/avaudiosessioncategory?language=objc).
-  /// - [mode] : an optional parameter for iOS. See [iOS documentation](https://developer.apple.com/documentation/avfoundation/avaudiosessionmode?language=objc) to understand the meaning of this parameter.
-  /// - [audioFlags] : an optional parameter for iOS
-  /// - [withUI] : true if the App plan to use [closeAudioSession] later.
-  ///
-  ///
-  /// *Example:*
-  /// ```dart
-  ///     myPlayer = await TauPlayer().closeAudioSession(focus: Focus.requestFocusAndDuckOthers, outputToSpeaker | allowBlueTooth);
-  ///
-  ///     ...
-  ///     (do something with myPlayer)
-  ///     ...
-  ///
-  ///     await myPlayer.closeAudioSession();
-  ///     myPlayer = null;
-  /// ```
-  Future<TauPlayer?> openAudioSession({
-    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
-    SessionCategory category = SessionCategory.playAndRecord,
-    SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
-    int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
-    bool withUI = false,
-  }) async {
-    if (_isInited ) {
-      return this;
-    }
-    TauPlayer? r;
-    await _lock.synchronized(() async {
-      r = await _openAudioSession(
-        focus: focus,
-        category: category,
-        mode: mode,
-        device: device,
-        audioFlags: audioFlags,
-        withUI: withUI,
-      );
-    });
-    return r;
-  }
-
-  Future<TauPlayer> _openAudioSession({
-    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
-    SessionCategory category = SessionCategory.playAndRecord,
-    SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
-    int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
-    bool withUI = false,
-  }) async {
-    _logger.d('FS:---> openAudioSession');
-    while (_openPlayerCompleter != null) {
-      _logger.w('Another openPlayer() in progress');
-      await _openPlayerCompleter!.future;
-    }
-
-    Completer<TauPlayer>? completer;
-    if (_isInited ) {
-      throw Exception('Player is already initialized');
-    }
-
-    if (_reStarted) {
-      // Perhaps a Hot Restart ?  We must reset the plugin
-      _logger.d('Resetting flutter_sound Player Plugin');
-      _reStarted = false;
-      await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
-    }
-    FlutterSoundPlayerPlatform.instance.openSession(this);
-    _setPlayerCallback();
-    assert(_openPlayerCompleter == null);
-    _openPlayerCompleter = Completer<TauPlayer>();
-    completer = _openPlayerCompleter;
-    try {
-      var state = await FlutterSoundPlayerPlatform.instance.openPlayer(this,
-          logLevel: _logLevel,
-          focus: focus,
-          category: category,
-          mode: mode,
-          audioFlags: audioFlags,
-          device: device,
-          withUI: withUI);
-      _playerState = PlayerState.values[state];
-    } on Exception {
-      _openPlayerCompleter = null;
-      rethrow;
-    }
-    _logger.d('FS:<--- openAudioSession');
-    return completer!.future;
-  }
-
-  /// @nodoc
-  @deprecated
-  Future<TauPlayer?> openAudioSessionWithUI(
-      {AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
-      SessionCategory category = SessionCategory.playAndRecord,
-      SessionMode mode = SessionMode.modeDefault,
-      AudioDevice device = AudioDevice.speaker,
-      int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay}) {
-    return openAudioSession(
-        focus: focus,
-        category: category,
-        mode: mode,
-        device: device,
-        withUI: true);
-  }
-
-  /// Set or unset the Audio Focus.
-  ///
-  /// This verb is very similar to [openAudioSession] and allow to change the parameters during an open Session
-  /// *Example:*
-  /// ```dart
-  ///         myPlayer.setAudioFocus(focus: AudioFocus.requestFocusAndDuckOthers);
-  /// ```
-  Future<void> setAudioFocus({
-    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
-    SessionCategory category = SessionCategory.playback,
-    SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
-    int audioFlags =
-        outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
-  }) async {
-    await _lock.synchronized(() async {
-      await _setAudioFocus(
-        focus: focus,
-        category: category,
-        mode: mode,
-        device: device,
-        audioFlags: audioFlags,
-      );
-    });
-  }
-
-  Future<void> _setAudioFocus({
-    AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
-    SessionCategory category = SessionCategory.playback,
-    SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
-    int audioFlags =
-        outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
-  }) async {
-    _logger.d('FS:---> setAudioFocus ');
-    await _waitOpen();
-    if (!_isInited ) {
-      throw Exception('Player is not open');
-    }
-    var state = await FlutterSoundPlayerPlatform.instance.setAudioFocus(
-      this,
-      focus: focus,
-      category: category,
-      mode: mode,
-      audioFlags: audioFlags,
-      device: device,
-    );
-    _playerState = PlayerState.values[state];
-    _logger.d('FS:<--- setAudioFocus ');
-  }
-
-  /// Close an open session.
-  ///
-  /// Must be called when finished with a Player, to release all the resources.
-  /// It is safe to call this procedure at any time.
-  /// - If the Player is not open, this verb will do nothing
-  /// - If the Player is currently in play or pause mode, it will be stopped before.
-  ///
-  /// example:
-  /// ```dart
-  /// @override
-  /// void dispose()
-  /// {
-  ///         if (myPlayer != null)
-  ///         {
-  ///             myPlayer.closeAudioSession();
-  ///             myPlayer = null;
-  ///         }
-  ///         super.dispose();
-  /// }
-  /// ```
-  Future<void> closeAudioSession() async {
-    await _lock.synchronized(() async {
-      await _closeAudioSession();
-    });
-  }
-
-  Future<void> _closeAudioSession() async {
-    _logger.d('FS:---> closeAudioSession ');
-
-    // If another closePlayer() is already in progress, wait until finished
-    while (_closePlayerCompleter != null) {
-      _logger.w('Another closePlayer() in progress');
-      await _closePlayerCompleter!.future;
-    }
-
-    if (!_isInited ) {
-      // Already closed
-      _logger.d('Player already close');
-      return;
-    }
-
-    Completer<void>? completer;
-    try {
-      await _stop(); // Stop the player if running
-
-      _removePlayerCallback();
-      assert(_closePlayerCompleter == null);
-      _closePlayerCompleter = Completer<void>();
-      completer = _closePlayerCompleter;
-      await FlutterSoundPlayerPlatform.instance.closePlayer(this);
-
-      FlutterSoundPlayerPlatform.instance.closeSession(this);
-    } on Exception {
-      _closePlayerCompleter = null;
-      rethrow;
-    }
-    _logger.d('FS:<--- closeAudioSession ');
-    return completer!.future;
   }
 
   /// Query the current state to the Tau Core layer.
@@ -901,7 +933,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     // - decode CAF/OPPUS (with native Apple AVFoundation)
 
     if (_needToConvert(codec)) {
-      if (!await (flutterSoundHelper.isFFmpegAvailable())) return false;
+      if (! tauHelper.isFFmpegAvailable()) return false;
       var convert = kIsWeb
           ? _tabWebConvert[codec.index]
           : (Platform.isIOS)
@@ -973,7 +1005,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     if (convert != null) {
       var fout = '${tempDir.path}/flutter_sound-tmp2${ext[convert.index]}';
       var path = what['path'] as String?;
-      await flutterSoundHelper.convertFile(path, codec, fout, convert);
+      await tauHelper.convertFile(path, codec, fout, convert);
 
       // Now we can play Apple CAF/OPUS
 
@@ -1096,7 +1128,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     if (codec == Codec.pcm16 && fromURI != null) {
       var tempDir = await getTemporaryDirectory();
       var path = '${tempDir.path}/flutter_sound_tmp.wav';
-      await flutterSoundHelper.pcmToWave(
+      await tauHelper.pcmToWave(
         inputFile: fromURI,
         outputFile: path,
         numChannels: 1,
@@ -1106,7 +1138,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       fromURI = path;
       codec = Codec.pcm16WAV;
     } else if (codec == Codec.pcm16 && fromDataBuffer != null) {
-      fromDataBuffer = await flutterSoundHelper.pcmToWaveBuffer(
+      fromDataBuffer = await tauHelper.pcmToWaveBuffer(
           inputBuffer: fromDataBuffer,
           sampleRate: sampleRate,
           numChannels: numChannels);
@@ -1157,7 +1189,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   ///
   /// The Speaker is directely linked to the Microphone.
   /// There is no processing between the Microphone and the Speaker.
-  /// If you want to process the data before playing them, actually you must define a loop between a [TauPlayer] and a [FlutterSoundRecorder].
+  /// If you want to process the data before playing them, actually you must define a loop between a [TauPlayer] and a [TauRecorder].
   /// (Please, look to [this example](http://www.canardoux.xyz/tau_sound/doc/pages/flutter-sound/api/topics/flutter_sound_examples_stream_loop.html)).
   ///
   /// Later, we will implement the _Tau Audio Graph_ concept, which will be a more general object.
@@ -2002,8 +2034,6 @@ class Track {
 
 /// FoodData are the regular objects received from a recorder when recording to a Dart Stream
 /// or sent to a player when playing from a Dart Stream
-/// @nodoc
-@deprecated
 class TauFoodData extends TauFood {
   /// the data to be sent (or received)
   Uint8List? data;
@@ -2012,16 +2042,12 @@ class TauFoodData extends TauFood {
   /* ctor */ TauFoodData(this.data);
 
   /// Used internally by Flutter Sound
-  /// @nodoc
-  @deprecated
   @override
   Future<void> exec(TauPlayer player) => player.feedFromStream(data!);
 }
 
 /// foodEvent is a special kin of food which allows to re-synchronize a stream
 /// with a player that play from a Dart Stream
-/// @nodoc
-@deprecated
 class TauFoodEvent extends TauFood {
   /// The callback to fire when this food is synchronized with the player
   Function on;
@@ -2040,10 +2066,8 @@ class TauFoodEvent extends TauFood {
 /// when recording to a Dart Stream.
 ///
 /// This class is extended by
-/// - [FoodData] and
-/// - [FoodEvent].
-/// @nodoc
-@deprecated
+/// - [TauFoodData] and
+/// - [TauFoodEvent].
 abstract class TauFood {
   /// use internally by Flutter Sound
   Future<void> exec(TauPlayer player);

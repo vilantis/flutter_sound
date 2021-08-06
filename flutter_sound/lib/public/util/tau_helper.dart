@@ -48,6 +48,12 @@ class TauHelper {
   Logger logger = Logger(level: Level.debug);
 
 
+  /// The Flutter FFmpeg module
+  FlutterFFmpeg? flutterFFmpeg;
+
+  FlutterFFmpegConfig? _flutterFFmpegConfig;
+  FlutterFFprobe? _flutterFFprobe;
+
 // -------------------------------------------------------------------------------------------------------------
 
   /// The factory which returns the Singleton
@@ -68,6 +74,73 @@ class TauHelper {
   ///
   /// returns true if FFmpeg is available (probably the FULL version of Flutter Sound)
   bool isFFmpegAvailable()  => (kIsWeb) ? false : _hasFFmpeg;
+
+
+
+
+
+  /// A wrapper for the great FFmpeg application.
+  ///
+  /// The command `man ffmpeg` (if you have installed ffmpeg on your computer) will give you many informations.
+  /// If you do not have `ffmpeg` on your computer you will find easyly on internet many documentation on this great program.
+  ///
+  /// We use here our own ffmpeg "execute" procedure instead of the one provided by the flutter_ffmpeg plugin,
+  /// so that the developers not interested by ffmpeg can use Flutter Sound without the flutter_ffmpeg plugin
+  /// and without any complain from the link-editor.
+  ///
+  /// Executes FFmpeg with `commandArguments` provided.
+  Future<int?> executeFFmpegWithArguments(List<String?> arguments) async{
+    if (!  isFFmpegAvailable()) {
+      return 0;
+    }
+    flutterFFmpeg ??= FlutterFFmpeg();
+    return flutterFFmpeg!.executeWithArguments(arguments);
+  }
+
+  /// Get the error code returned by [executeFFmpegWithArguments()].
+  ///
+  /// We use here our own ffmpeg "getLastReturnCode" procedure instead of the one provided by the flutter_ffmpeg plugin,
+  /// so that the developers not interested by ffmpeg can use Flutter Sound without the flutter_ffmpeg plugin
+  /// and without any complain from the link-editor.
+  ///
+  /// This simple verb is used to get the result of the last FFmpeg command.
+  Future<int?> getLastFFmpegReturnCode() async {
+    if (! isFFmpegAvailable()) {
+      return 0;
+    }
+    return _flutterFFmpegConfig!.getLastReturnCode();
+  }
+
+  /// Get the log code output by [executeFFmpegWithArguments()].
+  ///
+  /// We use here our own ffmpeg "getLastCommandOutput" procedure instead of the one provided by the flutter_ffmpeg plugin,
+  /// so that the developers not interested by ffmpeg can use Flutter Sound without the flutter_ffmpeg plugin
+  /// and without any complain from the link-editor.
+  ///
+  /// Returns log output of last executed command. Please note that disabling redirection using
+  /// This method does not support executing multiple concurrent commands. If you execute multiple commands at the same time, this method will return output from all executions.
+  /// `disableRedirection()` method also disables this functionality.
+  Future<String?> getLastFFmpegCommandOutput() async {
+    if (!isFFmpegAvailable()) {
+      return null;
+    }
+    return _flutterFFmpegConfig!.getLastCommandOutput();
+  }
+
+  /// Various informations about the Audio specified by the `uri` parameter.
+  ///
+  /// The informations Map got with FFmpegGetMediaInformation() are [documented here](https://pub.dev/packages/flutter_ffmpeg).
+  Future<Map<dynamic, dynamic>?> ffMpegGetMediaInformation(String uri) async {
+    _flutterFFprobe ??= FlutterFFprobe();
+    try {
+      return (await _flutterFFprobe!.getMediaInformation(uri))
+          .getAllProperties();
+    } on Exception {
+      return null;
+    }
+  }
+
+
 
   /// Get the duration of a sound file.
   ///
@@ -204,6 +277,8 @@ class TauHelper {
     var tempPath = tempDir.path;
     return tempPath + '/' + path;
   }
+
+
 
   /// Convert a sound file to a new format.
   ///

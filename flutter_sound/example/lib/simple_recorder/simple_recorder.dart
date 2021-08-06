@@ -67,7 +67,7 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
 
   @override
   void initState() {
-    _mPlayer!.openAudioSession().then((value) {
+    _mPlayer!.open().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
@@ -83,7 +83,7 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
 
   @override
   void dispose() {
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     _mRecorder!.closeAudioSession();

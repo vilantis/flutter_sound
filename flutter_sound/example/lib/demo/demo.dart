@@ -226,14 +226,10 @@ class _MyAppState extends State<Demo> {
   IOSink? sink;
 
   Future<void> _initializeExample(bool withUI) async {
-    await playerModule.closeAudioSession();
+    await playerModule.close();
     _isAudioPlayer = withUI;
-    await playerModule.openAudioSession(
-        withUI: withUI,
-        focus: AudioFocus.requestFocusAndStopOthers,
-        category: SessionCategory.playAndRecord,
-        mode: SessionMode.modeDefault,
-        device: AudioDevice.speaker);
+    await playerModule.open(
+        withShadeUI: withUI,);
     await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await recorderModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await initializeDateFormatting();
@@ -319,7 +315,7 @@ class _MyAppState extends State<Demo> {
 
   Future<void> releaseFlauto() async {
     try {
-      await playerModule.closeAudioSession();
+      await playerModule.close();
       await recorderModule.closeAudioSession();
     } on Exception {
       playerModule.logger.e('Released unsuccessful');

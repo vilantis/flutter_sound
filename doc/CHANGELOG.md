@@ -9,7 +9,7 @@ toc: false
 ---
 ## 9.0.0-alpha.1
 
-- Flutter Sound FULL is now correctely linked with Flutter_ffmpeg. This means that if the App needs to access flutter_ffmpeg, it can use either the FULL flavor or the LITE flavor as it wants.
+- Flutter Sound FULL is now correctely linked with Flutter_ffmpeg. This means that if the App needs to access flutter_ffmpeg, it can use either the FULL flavor or the LITE flavor as it wants. [install](https://tau.canardoux.xyz/flutter_sound_install.html#ffmpeg)
 - The V8 API continues to be supported : backward compatibility is Ensured. Side to side the V8 API, a new API V9 is proposed (beta). Please refer to [this migration guide](links_migration_v9).
 
 ## 8.3.9

@@ -44,7 +44,7 @@ import 'util/tau_helper.dart';
 ///
 /// Using a recorder is very simple :
 ///
-/// 1. Create a new `FlutterSoundRecorder`
+/// 1. Create a new `TauRecorder`
 ///
 /// 2. Open it with [openAudioSession()]
 ///
@@ -62,11 +62,11 @@ import 'util/tau_helper.dart';
 ///
 /// ----------------------------------------------------------------------------------------------------
 class TauRecorder implements FlutterSoundRecorderCallback {
-  /// The FlutterSoundRecorder Logger
+  /// The TauRecorder Logger
   Logger _logger = Logger(level: Level.debug);
   Level _logLevel = Level.debug;
 
-  /// The FlutterSoundRecorder Logger getter
+  /// The TauRecorder Logger getter
   Logger get logger => _logger;
 
   /// Used if the App wants to dynamically change the Log Level.
@@ -815,7 +815,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
         // Unfortunately we cannot just remix the OPUS data,
         // because Apple does not set the "extradata" in its private OPUS format.
         // It will be good if we can improve this...
-        var rc = await flutterSoundHelper.executeFFmpegWithArguments([
+        var rc = await TauHelper().executeFFmpegWithArguments([
           '-loglevel',
           'error',
           '-y',

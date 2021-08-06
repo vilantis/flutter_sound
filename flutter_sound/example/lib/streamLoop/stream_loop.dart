@@ -53,11 +53,7 @@ class _StreamLoopState extends State<StreamLoop> {
       audioFlags: allowHeadset | allowEarPiece | allowBlueToothA2DP,
       category: SessionCategory.playAndRecord,
     );
-    await _mPlayer!.openAudioSession(
-      device: AudioDevice.blueToothA2DP,
-      audioFlags: allowHeadset | allowEarPiece | allowBlueToothA2DP,
-      category: SessionCategory.playAndRecord,
-    );
+    await _mPlayer!.open();
   }
 
   @override
@@ -74,7 +70,7 @@ class _StreamLoopState extends State<StreamLoop> {
 
   Future<void> release() async {
     await stopPlayer();
-    await _mPlayer!.closeAudioSession();
+    await _mPlayer!.close();
     _mPlayer = null;
 
     await stopRecorder();

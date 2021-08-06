@@ -50,7 +50,7 @@ class _LogLevelState extends State<LogLevel> {
   @override
   void initState() {
     super.initState();
-    _mPlayer!.openAudioSession().then((value) {
+    _mPlayer!.open().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
@@ -61,7 +61,7 @@ class _LogLevelState extends State<LogLevel> {
   void dispose() {
     stopPlayer();
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     super.dispose();

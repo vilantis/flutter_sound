@@ -121,6 +121,7 @@ enum SessionMode
 
 /// Control the focus mode.
 enum AudioFocus {
+  /// Deprecated. Do not use
   requestFocus,
 
   /// request focus and allow other audio

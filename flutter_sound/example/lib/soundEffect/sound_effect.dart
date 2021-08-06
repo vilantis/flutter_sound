@@ -56,7 +56,7 @@ class _SoundEffectState extends State<SoundEffect> {
   }
 
   Future<void> init() async {
-    await _mPlayer!.openAudioSession();
+    await _mPlayer!.open();
     bimData = TauHelper().waveToPCMBuffer(
       inputBuffer: await getAssetData(_bim),
     );
@@ -84,7 +84,7 @@ class _SoundEffectState extends State<SoundEffect> {
   @override
   void dispose() {
     _mPlayer!.stopPlayer();
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     super.dispose();

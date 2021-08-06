@@ -80,17 +80,17 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     ).then((value) => setState(() {
           buffer3 = value;
         }));
-    _mPlayer1!.openAudioSession().then((value) {
+    _mPlayer1!.open().then((value) {
       setState(() {
         _mPlayer1IsInited = true;
       });
     });
-    _mPlayer2!.openAudioSession().then((value) {
+    _mPlayer2!.open().then((value) {
       setState(() {
         _mPlayer2IsInited = true;
       });
     });
-    _mPlayer3!.openAudioSession().then((value) {
+    _mPlayer3!.open().then((value) {
       setState(() {
         _mPlayer3IsInited = true;
       });
@@ -101,13 +101,13 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   void dispose() {
     // Be careful : you must `close` the audio session when you have finished with it.
     cancelPlayerSubscriptions1();
-    _mPlayer1!.closeAudioSession();
+    _mPlayer1!.close();
     _mPlayer1 = null;
     cancelPlayerSubscriptions2();
-    _mPlayer2!.closeAudioSession();
+    _mPlayer2!.close();
     _mPlayer2 = null;
     cancelPlayerSubscriptions3();
-    _mPlayer3!.closeAudioSession();
+    _mPlayer3!.close();
     _mPlayer3 = null;
 
     super.dispose();

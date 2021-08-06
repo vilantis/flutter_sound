@@ -51,10 +51,7 @@ class _PlayFromMicState extends State<PlayFromMic> {
 
     // Be careful : openAudioSession returns a Future.
     // Do not access your TauPlayer or TauRecorder before the completion of the Future
-    await _mPlayer!.openAudioSession(
-      device: AudioDevice.blueToothA2DP,
-      audioFlags: allowHeadset | allowEarPiece | allowBlueToothA2DP,
-      category: SessionCategory.playAndRecord,
+    await _mPlayer!.open(
     );
     setState(() {
       _mPlayerIsInited = true;
@@ -71,7 +68,7 @@ class _PlayFromMicState extends State<PlayFromMic> {
   void dispose() {
     stopPlayer();
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mPlayer!.closeAudioSession();
+    _mPlayer!.close();
     _mPlayer = null;
 
     super.dispose();
