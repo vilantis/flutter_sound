@@ -38,7 +38,7 @@ import 'package:synchronized/synchronized.dart';
 import '../flutter_sound.dart';
 import 'util/tau_helper.dart';
 
-/// A Recorder is an object that can playback from various sources.
+/// A Recorder is an object that can record from various sources.
 ///
 /// ----------------------------------------------------------------------------------------------------
 ///
@@ -46,19 +46,19 @@ import 'util/tau_helper.dart';
 ///
 /// 1. Create a new `TauRecorder`
 ///
-/// 2. Open it with [openAudioSession()]
+/// 2. Open it with [open()]
 ///
-/// 3. Start your recording with [startRecorder()].
+/// 3. Start your recording with [record()].
 ///
 /// 4. Use the various verbs (optional):
-///    - [pauseRecorder()]
-///    - [resumeRecorder()]
+///    - [pause()]
+///    - [resume()]
 ///    - ...
 ///
-/// 5. Stop your recorder : [stopRecorder()]
+/// 5. Stop your recorder : [stop()]
 ///
-/// 6. Release your recorder when you have finished with it : [closeAudioSession()].
-/// This verb will call [stopRecorder()] if necessary.
+/// 6. Release your recorder when you have finished with it : [close()].
+/// This verb will call [stop()] if necessary.
 ///
 /// ----------------------------------------------------------------------------------------------------
 class TauRecorder implements FlutterSoundRecorderCallback {
@@ -68,6 +68,19 @@ class TauRecorder implements FlutterSoundRecorderCallback {
 
   /// The TauRecorder Logger getter
   Logger get logger => _logger;
+
+
+
+  //============================================ New API ===================================================================
+
+
+
+  /// Instanciate a new Flutter Sound Recorder.
+  /// The optional paramater `Level logLevel` specify the Logger Level you are interested by.
+  /* ctor */ TauRecorder({Level logLevel = Level.debug}) {
+    _logger = Logger(level: logLevel);
+    _logger.d('ctor: TauRecorder()');
+  }
 
   /// Used if the App wants to dynamically change the Log Level.
   /// Seldom used. Most of the time the Log Level is specified during the constructor.
@@ -84,78 +97,176 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     });
   }
 
+
+  /// Open a Recorder
+  ///
+  /// A recorder must be opened before used. A recorder correspond to an Audio Session. With other words, you must *open* the Audio Session before using it.
+  /// When you have finished with a Recorder, you must close it. With other words, you must close your Audio Session.
+  /// Opening a recorder takes resources inside the OS. Those resources are freed with the verb `closeAudioSession()`.
+  ///
+  /// You MUST ensure that the recorder has been closed when your widget is detached from the UI.
+  /// Overload your widget's `dispose()` method to close the recorder when your widget is disposed.
+  /// In this way you will reset the Recorder and clean up the device resources, but the recorder will be no longer usable.
+  ///
+  /// ```dart
+  /// @override
+  /// void dispose()
+  /// {
+  ///         if (myRecorder != null)
+  ///         {
+  ///             myRecorder.closeAudioSession();
+  ///             myRecorder = null;
+  ///         }
+  ///         super.dispose();
+  /// }
+  /// ```
+  ///
+  /// You may not openAudioSession many recorders without releasing them.
+  ///
+  /// `openAudioSession()` and `closeAudioSession()` return Futures.
+  /// You do not need to wait the end of the initialization before [startRecorder()].
+  /// [startRecorder] will automaticaly wait the end of `openAudioSession()` before starting the recorder.
+  ///
+  /// The four optional parameters are used if you want to control the Audio Focus. Please look to [TauRecorder openAudioSession()](Recorder.md#openaudiosession-and-closeaudiosession) to understand the meaning of those parameters
+  ///
+  /// *Example:*
+  /// ```dart
+  ///     myRecorder = await TauRecorder().openAudioSession();
+  ///
+  ///     ...
+  ///     (do something with myRecorder)
+  ///     ...
+  ///
+  ///     myRecorder.closeAudioSession();
+  ///     myRecorder = null;
+  /// ```
+  Future<TauRecorder?> open() async {
+    if (_isInited ) {
+      return this;
+    }
+
+    TauRecorder? r;
+    _logger.d('FS:---> open ');
+    await _lock.synchronized(() async {
+      r = await _open();
+    });
+    _logger.d('FS:<--- open ');
+    return r;
+  }
+
+  /// Close a Recorder
+  ///
+  /// You must close your recorder when you have finished with it, for releasing the resources.
+  /// Delete all the temporary files created with `startRecorder()`
+
+  Future<void> close() async {
+    _logger.d('FS:---> close ');
+    await _lock.synchronized(() async {
+      await _close();
+    });
+    _logger.d('FS:<--- close ');
+  }
+
+  //--------------------------------------------- Locals --------------------------------------------------------------------
+
   /// Locals
   /// ------
   ///
+  ///
+
+  Future<TauRecorder> _open(
+      ) async {
+    _logger.d('---> openAudioSession');
+
+    Completer<TauRecorder>? completer;
+
+    _setRecorderCallback();
+    if (_userStreamSink != null) {
+      await _userStreamSink!.close();
+      _userStreamSink = null;
+    }
+    assert(_openRecorderCompleter == null);
+    _openRecorderCompleter = Completer<TauRecorder>();
+    completer = _openRecorderCompleter;
+    try {
+      if (_reStarted) {
+        // Perhaps a Hot Restart ?  We must reset the plugin
+        _logger.d('Resetting flutter_sound Recorder Plugin');
+        _reStarted = false;
+        await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
+      }
+
+      FlutterSoundRecorderPlatform.instance.openSession(this);
+      await FlutterSoundRecorderPlatform.instance.openRecorder(
+        this,
+        logLevel: _logLevel,
+        focus: AudioFocus.doNotRequestFocus,
+        category: SessionCategory.playAndRecord,
+        mode: SessionMode.modeDefault,
+        audioFlags: 0,
+        device: AudioDevice.blueToothA2DP,
+      );
+
+    } on Exception {
+      _openRecorderCompleter = null;
+      rethrow;
+    }
+    _logger.d('<--- openAudioSession');
+    return completer!.future;
+  }
+
+  Future<void> _close() async {
+    _logger.d('FS:---> closeAudioSession ');
+    // If another closeRecorder() is already in progress, wait until finished
+    while (_closeRecorderCompleter != null) {
+      try {
+        _logger.w('Another closeRecorder() in progress');
+        await _closeRecorderCompleter!.future;
+      } catch (_) {}
+    }
+    if (!_isInited ) {
+      // Already close
+      _logger.i('Recorder already close');
+      return;
+    }
+
+    Completer<void>? completer;
+
+    try {
+      await _stop(); // Stop the recorder if running
+    } catch (e) {
+      _logger.e(e.toString());
+    }
+    _removeRecorderCallback(); // _recorderController will be closed by this function
+    if (_userStreamSink != null) {
+      await _userStreamSink!.close();
+      _userStreamSink = null;
+    }
+    assert(_closeRecorderCompleter == null);
+    _closeRecorderCompleter = Completer<void>();
+    try {
+      completer = _closeRecorderCompleter;
+
+      await FlutterSoundRecorderPlatform.instance.closeRecorder(this);
+      FlutterSoundRecorderPlatform.instance.closeSession(this);
+    } on Exception {
+      _closeRecorderCompleter = null;
+      rethrow;
+    }
+    _logger.d('FS:<--- closeAudioSession ');
+    return completer!.future;
+  }
+
+  //===================================  Callbacks ================================================================
+
+  /// Completers
+
   Completer<void>? _startRecorderCompleter;
   Completer<void>? _pauseRecorderCompleter;
   Completer<void>? _resumeRecorderCompleter;
   Completer<String>? _stopRecorderCompleter;
   Completer<void>? _closeRecorderCompleter;
   Completer<TauRecorder>? _openRecorderCompleter;
-
-  final _lock = Lock();
-  static bool _reStarted = true;
-
-  bool _isInited = false;
-  bool _isOggOpus =
-      false; // Set by startRecorder when the user wants to record an ogg/opus
-
-  String?
-      _savedUri; // Used by startRecorder/stopRecorder to keep the caller wanted uri
-
-  String?
-      _tmpUri; // Used by startRecorder/stopRecorder to keep the temporary uri to record CAF
-
-  RecorderState _recorderState = RecorderState.isStopped;
-  StreamController<RecordingDisposition>? _recorderController;
-
-  /// A reference to the User Sink during `StartRecorder(toStream:...)`
-  StreamSink<TauFood>? _userStreamSink;
-
-  /// The current state of the Recorder
-  RecorderState get recorderState => _recorderState;
-
-  /// Used by the UI Widget.
-  ///
-  /// It is a duplicate from [onProgress] and should not be here
-  /// @nodoc
-  Stream<RecordingDisposition>? dispositionStream() {
-    return (_recorderController != null) ? _recorderController!.stream : null;
-  }
-
-  /// A stream on which FlutterSound will post the recorder progression.
-  /// You may listen to this Stream to have feedback on the current recording.
-  ///
-  /// *Example:*
-  /// ```dart
-  ///         _recorderSubscription = myRecorder.onProgress.listen((e)
-  ///         {
-  ///                 Duration maxDuration = e.duration;
-  ///                 double decibels = e.decibels
-  ///                 ...
-  ///         }
-  /// ```
-  Stream<RecordingDisposition>? get onProgress =>
-      (_recorderController != null) ? _recorderController!.stream : null;
-
-  /// True if `recorderState.isRecording`
-  bool get isRecording => (_recorderState == RecorderState.isRecording);
-
-  /// True if `recorderState.isStopped`
-  bool get isStopped => (_recorderState == RecorderState.isStopped);
-
-  /// True if `recorderState.isPaused`
-  bool get isPaused => (_recorderState == RecorderState.isPaused);
-
-  /// Instanciate a new Flutter Sound Recorder.
-  /// The optional paramater `Level logLevel` specify the Logger Level you are interested by.
-  /* ctor */ TauRecorder({Level logLevel = Level.debug}) {
-    _logger = Logger(level: logLevel);
-    _logger.d('ctor: TauRecorder()');
-  }
-
-  //===================================  Callbacks ================================================================
 
   /// Callback from the &tau; Core. Must not be called by the App
   /// @nodoc
@@ -324,7 +435,63 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     _logger.log(logLevel, msg);
   }
 
-// ----------------------------------------------------------------------------------------------------------------------------------------------
+
+  //============================================= Old API ==================================================================
+
+  final _lock = Lock();
+  static bool _reStarted = true;
+
+  bool _isInited = false;
+  bool _isOggOpus =
+      false; // Set by startRecorder when the user wants to record an ogg/opus
+
+  String?
+      _savedUri; // Used by startRecorder/stopRecorder to keep the caller wanted uri
+
+  String?
+      _tmpUri; // Used by startRecorder/stopRecorder to keep the temporary uri to record CAF
+
+  RecorderState _recorderState = RecorderState.isStopped;
+  StreamController<RecordingDisposition>? _recorderController;
+
+  /// A reference to the User Sink during `StartRecorder(toStream:...)`
+  StreamSink<TauFood>? _userStreamSink;
+
+  /// The current state of the Recorder
+  RecorderState get recorderState => _recorderState;
+
+  /// Used by the UI Widget.
+  ///
+  /// It is a duplicate from [onProgress] and should not be here
+  /// @nodoc
+  Stream<RecordingDisposition>? dispositionStream() {
+    return (_recorderController != null) ? _recorderController!.stream : null;
+  }
+
+  /// A stream on which FlutterSound will post the recorder progression.
+  /// You may listen to this Stream to have feedback on the current recording.
+  ///
+  /// *Example:*
+  /// ```dart
+  ///         _recorderSubscription = myRecorder.onProgress.listen((e)
+  ///         {
+  ///                 Duration maxDuration = e.duration;
+  ///                 double decibels = e.decibels
+  ///                 ...
+  ///         }
+  /// ```
+  Stream<RecordingDisposition>? get onProgress =>
+      (_recorderController != null) ? _recorderController!.stream : null;
+
+  /// True if `recorderState.isRecording`
+  bool get isRecording => (_recorderState == RecorderState.isRecording);
+
+  /// True if `recorderState.isStopped`
+  bool get isStopped => (_recorderState == RecorderState.isStopped);
+
+  /// True if `recorderState.isPaused`
+  bool get isPaused => (_recorderState == RecorderState.isPaused);
+
 
   Future<void> _waitOpen() async {
     while (_openRecorderCompleter != null) {
@@ -334,173 +501,6 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     if (!_isInited ) {
       throw Exception('Recorder is not open');
     }
-  }
-
-  /// Open a Recorder
-  ///
-  /// A recorder must be opened before used. A recorder correspond to an Audio Session. With other words, you must *open* the Audio Session before using it.
-  /// When you have finished with a Recorder, you must close it. With other words, you must close your Audio Session.
-  /// Opening a recorder takes resources inside the OS. Those resources are freed with the verb `closeAudioSession()`.
-  ///
-  /// You MUST ensure that the recorder has been closed when your widget is detached from the UI.
-  /// Overload your widget's `dispose()` method to close the recorder when your widget is disposed.
-  /// In this way you will reset the Recorder and clean up the device resources, but the recorder will be no longer usable.
-  ///
-  /// ```dart
-  /// @override
-  /// void dispose()
-  /// {
-  ///         if (myRecorder != null)
-  ///         {
-  ///             myRecorder.closeAudioSession();
-  ///             myRecorder = null;
-  ///         }
-  ///         super.dispose();
-  /// }
-  /// ```
-  ///
-  /// You may not openAudioSession many recorders without releasing them.
-  ///
-  /// `openAudioSession()` and `closeAudioSession()` return Futures.
-  /// You do not need to wait the end of the initialization before [startRecorder()].
-  /// [startRecorder] will automaticaly wait the end of `openAudioSession()` before starting the recorder.
-  ///
-  /// The four optional parameters are used if you want to control the Audio Focus. Please look to [TauRecorder openAudioSession()](Recorder.md#openaudiosession-and-closeaudiosession) to understand the meaning of those parameters
-  ///
-  /// *Example:*
-  /// ```dart
-  ///     myRecorder = await TauRecorder().openAudioSession();
-  ///
-  ///     ...
-  ///     (do something with myRecorder)
-  ///     ...
-  ///
-  ///     myRecorder.closeAudioSession();
-  ///     myRecorder = null;
-  /// ```
-  Future<TauRecorder?> openAudioSession(
-      {AudioFocus focus = AudioFocus.requestFocusTransient,
-      SessionCategory category = SessionCategory.playAndRecord,
-      SessionMode mode = SessionMode.modeDefault,
-      int audioFlags = outputToSpeaker,
-      AudioDevice device = AudioDevice.speaker}) async {
-    if (_isInited ) {
-      return this;
-    }
-
-    TauRecorder? r;
-    _logger.d('FS:---> openAudioSession ');
-    await _lock.synchronized(() async {
-      r = await _openAudioSession(
-        focus: focus,
-        category: category,
-        mode: mode,
-        audioFlags: audioFlags,
-        device: device,
-      );
-    });
-    _logger.d('FS:<--- openAudioSession ');
-    return r;
-  }
-
-  Future<TauRecorder> _openAudioSession(
-      {AudioFocus focus = AudioFocus.requestFocusTransient,
-      SessionCategory category = SessionCategory.playAndRecord,
-      SessionMode mode = SessionMode.modeDefault,
-      int audioFlags = outputToSpeaker,
-      AudioDevice device = AudioDevice.speaker}) async {
-    _logger.d('---> openAudioSession');
-
-    Completer<TauRecorder>? completer;
-
-    _setRecorderCallback();
-    if (_userStreamSink != null) {
-      await _userStreamSink!.close();
-      _userStreamSink = null;
-    }
-    assert(_openRecorderCompleter == null);
-    _openRecorderCompleter = Completer<TauRecorder>();
-    completer = _openRecorderCompleter;
-    try {
-      if (_reStarted) {
-        // Perhaps a Hot Restart ?  We must reset the plugin
-        _logger.d('Resetting flutter_sound Recorder Plugin');
-        _reStarted = false;
-        await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
-      }
-
-      FlutterSoundRecorderPlatform.instance.openSession(this);
-      await FlutterSoundRecorderPlatform.instance.openRecorder(
-        this,
-        logLevel: _logLevel,
-        focus: focus,
-        category: category,
-        mode: mode,
-        audioFlags: audioFlags,
-        device: device,
-      );
-
-    } on Exception {
-      _openRecorderCompleter = null;
-      rethrow;
-    }
-    _logger.d('<--- openAudioSession');
-    return completer!.future;
-  }
-
-  /// Close a Recorder
-  ///
-  /// You must close your recorder when you have finished with it, for releasing the resources.
-  /// Delete all the temporary files created with `startRecorder()`
-
-  Future<void> closeAudioSession() async {
-    _logger.d('FS:---> closeAudioSession ');
-    await _lock.synchronized(() async {
-      await _closeAudioSession();
-    });
-    _logger.d('FS:<--- closeAudioSession ');
-  }
-
-  Future<void> _closeAudioSession() async {
-    _logger.d('FS:---> closeAudioSession ');
-    // If another closeRecorder() is already in progress, wait until finished
-    while (_closeRecorderCompleter != null) {
-      try {
-        _logger.w('Another closeRecorder() in progress');
-        await _closeRecorderCompleter!.future;
-      } catch (_) {}
-    }
-    if (!_isInited ) {
-      // Already close
-      _logger.i('Recorder already close');
-      return;
-    }
-
-    Completer<void>? completer;
-
-    try {
-      await _stop(); // Stop the recorder if running
-    } catch (e) {
-      _logger.e(e.toString());
-    }
-    _removeRecorderCallback(); // _recorderController will be closed by this function
-    if (_userStreamSink != null) {
-      await _userStreamSink!.close();
-      _userStreamSink = null;
-    }
-    assert(_closeRecorderCompleter == null);
-    _closeRecorderCompleter = Completer<void>();
-    try {
-      completer = _closeRecorderCompleter;
-
-      await FlutterSoundRecorderPlatform.instance.closeRecorder(this);
-      FlutterSoundRecorderPlatform.instance.closeSession(this);
-    } on Exception {
-      _closeRecorderCompleter = null;
-      rethrow;
-    }
-    _logger.d('FS:<--- closeAudioSession ');
-    return completer!.future;
   }
 
   /// Returns true if the specified encoder is supported by flutter_sound on this platform.

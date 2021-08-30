@@ -118,8 +118,8 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   void play1() async {
     await _mPlayer1!.setSubscriptionDuration(Duration(milliseconds: 10));
     _addListener1();
-    await _mPlayer1!.startPlayer(
-        fromURI: _exampleAudioFilePathMP3,
+    await _mPlayer1!.play(
+        from: InputFile(_exampleAudioFilePathMP3),
         codec: Codec.mp3,
         whenFinished: () {
           setState(() {});
@@ -161,8 +161,8 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   void play2() async {
     await _mPlayer2!.setSubscriptionDuration(Duration(milliseconds: 10));
     _addListener2();
-    await _mPlayer2!.startPlayer(
-        fromDataBuffer: buffer2,
+    await _mPlayer2!.play(
+        from: InputBuffer(buffer2),
         codec: Codec.aacADTS,
         whenFinished: () {
           setState(() {});

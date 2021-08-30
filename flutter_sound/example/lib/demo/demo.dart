@@ -243,11 +243,7 @@ class _MyAppState extends State<Demo> {
         throw RecordingPermissionException('Microphone permission not granted');
       }
     }
-    await recorderModule.openAudioSession(
-        focus: AudioFocus.requestFocusAndStopOthers,
-        category: SessionCategory.playAndRecord,
-        mode: SessionMode.modeDefault,
-        device: AudioDevice.speaker);
+    await recorderModule.open();
     if (!await recorderModule.isEncoderSupported(_codec) && kIsWeb) {
       _codec = Codec.opusWebM;
     }
@@ -316,7 +312,7 @@ class _MyAppState extends State<Demo> {
   Future<void> releaseFlauto() async {
     try {
       await playerModule.close();
-      await recorderModule.closeAudioSession();
+      await recorderModule.close();
     } on Exception {
       playerModule.logger.e('Released unsuccessful');
     }
@@ -599,8 +595,8 @@ class _MyAppState extends State<Demo> {
         return;
       } else {
         if (audioFilePath != null) {
-          await playerModule.startPlayer(
-              fromURI: audioFilePath,
+          await playerModule.play(
+              from: InputFile(audioFilePath),
               codec: codec,
               sampleRate: tSTREAMSAMPLERATE,
               whenFinished: () {
@@ -618,8 +614,8 @@ class _MyAppState extends State<Demo> {
             );
             codec = Codec.pcm16WAV;
           }
-          await playerModule.startPlayer(
-              fromDataBuffer: dataBuffer,
+          await playerModule.play(
+              from: InputBuffer(dataBuffer),
               sampleRate: tSAMPLERATE,
               codec: codec,
               whenFinished: () {

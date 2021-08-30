@@ -19,6 +19,7 @@
 ## Overview
 
 Flutter Sound is a Flutter package allowing you to play and record audio for :
+
 - Android
 - iOS
 - Flutter Web
@@ -54,21 +55,17 @@ The Flutter Sound package includes the following features
 
 You can find the [changes here](https://tau.canardoux.xyz/changelog.html)
 
-
 ## Documentation
 
 The [documentation is here](https://tau.canardoux.xyz/readme.html)
 
-
 ## Licenses
 
-- Flutter Sound is copyrighted by Dooboolab (2018, 2019, 2020, 2021).
-- Flutter Sound is released under a license with a *copyleft* clause: the LGPL-V3 license. This means that if you modify some of Flutter Sound code you must publish your modifications under the LGPL license too.
+- Flutter Sound and tau_core are copyrighted by Dooboolab (2018, 2019, 2020, 2021).
+- Flutter Sound  and tau_core are released under a license with a *copyleft* clause: the MPL-V2 license. This means that if you modify some of Flutter Sound code you must publish your modifications under the MPL license too.
 
-- Tau React is copyrighted by Canardoux (2021).
-- Tau React is released under a license with a **strong** *copyleft* clause : the GPL-V3 license. This means that if you use part or all of Tau React in your App, this App must be published under the GPL-V3 license, too.
-
-
+- Tau React, Tau RCL and Tau JS are copyrighted by Canardoux (2021).
+- Tau React, Tau RCL and Tau JS are released under a license with a **strong** *copyleft* clause : the GPL-V3 license. This means that if you use part or all of Tau React, Tau RCL or Tau JS in your App, this App must be published under the GPL-V3 license, too.
 
 ## Help
 
@@ -80,7 +77,6 @@ I'm looking to make &tau; the go to project for Audio with support for each of t
 
 I greatly appreciate any contributions to the project which can be as simple as providing feedback on the API or documentation.
 
-
 ## Thanks
 
 Too many projects to manage. I am burning out slowly. If you could help me cheer up, buy me a cup of coffee will make my life really happy and get much energy out of it. As a side effect, we will know that Flutter Sound is important for you, that you appreciate our job and that you can show it with a little money.
@@ -89,4 +85,3 @@ Too many projects to manage. I am burning out slowly. If you could help me cheer
 [![Paypal](https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png)](https://paypal.me/thetauproject?locale.x=fr_FR)
 
 ## You can also click on the "Thumb up" button of the top of the [pub.dev page](https://pub.dev/packages/flutter_sound). This is free and this will reassure me that **I do not spend most of my life for nobody**.
-

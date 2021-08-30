@@ -78,7 +78,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
     _mPlayer!.close();
     _mPlayer = null;
 
-    _mRecorder!.closeAudioSession();
+    _mRecorder!.close();
     _mRecorder = null;
     super.dispose();
   }
@@ -93,7 +93,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
         throw RecordingPermissionException('Microphone permission not granted');
       }
     }
-    await _mRecorder!.openAudioSession();
+    await _mRecorder!.open();
     _mRecorderIsInited = true;
   }
 

@@ -57,7 +57,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Microphone permission not granted');
     }
-    await _mRecorder!.openAudioSession();
+    await _mRecorder!.open();
     setState(() {
       _mRecorderIsInited = true;
     });
@@ -83,7 +83,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
     _mPlayer = null;
 
     stopRecorder();
-    _mRecorder!.closeAudioSession();
+    _mRecorder!.close();
     _mRecorder = null;
     super.dispose();
   }

@@ -55,6 +55,11 @@ enum PlayerState {
 /// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
 typedef TWhenFinished = void Function();
 
+/// Playback function type for [FlutterSoundPlayer.startPlayer()].
+///
+/// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
+typedef TOnProgress = void Function();
+
 /// Playback function type for [FlutterSoundPlayer.startPlayerFromTrack()].
 ///
 /// Note : this type must include a parameter with a reference to the FlutterSoundPlayer object involved.
@@ -293,7 +298,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   ///         super.dispose();
   /// }
   /// ```
-  Future<void> close({bool keepFocus = false,}) async {
+  Future<void> close({bool? keepFocus,}) async {
     await _lock.synchronized(() async {
       await _close(keepFocus: keepFocus);
     });
@@ -331,6 +336,83 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       );
     });
   }
+
+
+
+  /// Used to play a sound.
+  //
+  /// - `startPlayer()` has three optional parameters, depending on your sound source :
+  ///    - `fromUri:`  (if you want to play a file or a remote URI)
+  ///    - `fromDataBuffer:` (if you want to play from a data buffer)
+  ///    - `sampleRate` is mandatory if `codec` == `Codec.pcm16`. Not used for other codecs.
+  ///
+  /// You must specify one or the three parameters : `fromUri`, `fromDataBuffer`, `fromStream`.
+  ///
+  /// - You use the optional parameter`codec:` for specifying the audio and file format of the file. Please refer to the [Codec compatibility Table](/guides_codec.html) to know which codecs are currently supported.
+  ///
+  /// - `whenFinished:()` : A lambda function for specifying what to do when the playback will be finished.
+  ///
+  /// Very often, the `codec:` parameter is not useful. Flutter Sound will adapt itself depending on the real format of the file provided.
+  /// But this parameter is necessary when Flutter Sound must do format conversion (for example to play opusOGG on iOS).
+  ///
+  /// `startPlayer()` returns a Duration Future, which is the record duration.
+  ///
+  /// The `fromUri` parameter, if specified, can be one of three posibilities :
+  /// - The URL of a remote file
+  /// - The path of a local file
+  /// - The name of a temporary file (without any slash '/')
+  ///
+  /// Hint: [path_provider](https://pub.dev/packages/path_provider) can be useful if you want to get access to some directories on your device.
+  ///
+  ///
+  /// *Example:*
+  /// ```dart
+  ///         Duration d = await myPlayer.startPlayer(fromURI: 'foo', codec: Codec.aacADTS); // Play a temporary file
+  ///
+  ///         _playerSubscription = myPlayer.onProgress.listen((e)
+  ///         {
+  ///                 // ...
+  ///         });
+  /// }
+  /// ```
+  ///
+  /// *Example:*
+  /// ```dart
+  ///     final fileUri = "https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3";
+  ///
+  ///     Duration d = await myPlayer.startPlayer
+  ///     (
+  ///                 fromURI: fileUri,
+  ///                 codec: Codec.mp3,
+  ///                 whenFinished: ()
+  ///                 {
+  ///                          logger.d( 'I hope you enjoyed listening to this song' );
+  ///                 },
+  ///     );
+  /// ```
+  Future<Duration?> play({
+    required InputNode from,
+    TauCodec? codec,
+    TWhenFinished? whenFinished,
+    TOnProgress? onProgress,
+    Duration? interval,
+
+/*
+    String? fromURI,
+    Uint8List? fromDataBuffer,
+    Codec codec = Codec.aacADTS,
+    int sampleRate = 16000, // Used only with codec == Codec.pcm16
+    int numChannels = 1, // Used only with codec == Codec.pcm16
+
+ */
+  }) async {
+    Duration? r;
+    await _lock.synchronized(() async {
+      r = await _startPlayer();
+    });
+    return r;
+  }
+
 
 
   //--------------------------------------------- Locals --------------------------------------------------------------------
@@ -401,7 +483,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
 
 
-  Future<void> _close({bool keepFocus = false,}) async {
+  Future<void> _close({bool? keepFocus ,}) async {
     _logger.d('FS:---> close() ');
 
     // If another closePlayer() is already in progress, wait until finished
@@ -425,7 +507,11 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       _closePlayerCompleter = Completer<void>();
       completer = _closePlayerCompleter;
       await FlutterSoundPlayerPlatform.instance.closePlayer(this);
-      if (FlutterSoundPlayerPlatform.instance.numberOfOpenSessions() <= 1 && !keepFocus && _hasFocus) {
+      if (keepFocus == null)
+        {
+          keepFocus = (FlutterSoundPlayerPlatform.instance.numberOfOpenSessions() > 1);
+        }
+      if ( !keepFocus && _hasFocus) {
         await _setAudioFocus(focus: AudioFocus.abandonFocus); // Abandon the focus
       }
       FlutterSoundPlayerPlatform.instance.closeSession(this);
@@ -465,6 +551,82 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     );
     _playerState = PlayerState.values[state];
     _logger.d('FS:<--- setAudioFocus ');
+  }
+
+
+
+  Future<Duration> _startPlayer({
+    String? fromURI,
+    Uint8List? fromDataBuffer,
+    Codec codec = Codec.aacADTS,
+    int sampleRate = 16000, // Used only with codec == Codec.pcm16
+    int numChannels = 1, // Used only with codec == Codec.pcm16
+    TWhenFinished? whenFinished,
+  }) async {
+    _logger.d('FS:---> startPlayer ');
+    await _waitOpen();
+    if (!_isInited ) {
+      throw Exception('Player is not open');
+    }
+
+    if (codec == Codec.pcm16 && fromURI != null) {
+      var tempDir = await getTemporaryDirectory();
+      var path = '${tempDir.path}/flutter_sound_tmp.wav';
+      await tauHelper.pcmToWave(
+        inputFile: fromURI,
+        outputFile: path,
+        numChannels: 1,
+        //bitsPerSample: 16,
+        sampleRate: sampleRate,
+      );
+      fromURI = path;
+      codec = Codec.pcm16WAV;
+    } else if (codec == Codec.pcm16 && fromDataBuffer != null) {
+      fromDataBuffer = await tauHelper.pcmToWaveBuffer(
+          inputBuffer: fromDataBuffer,
+          sampleRate: sampleRate,
+          numChannels: numChannels);
+      codec = Codec.pcm16WAV;
+    }
+    Completer<Duration>? completer;
+
+    await _stop(); // Just in case
+
+    //playerState = PlayerState.isPlaying;
+    var what = <String, dynamic>{
+      'codec': codec,
+      'path': fromURI,
+      'fromDataBuffer': fromDataBuffer,
+    };
+    await _convert(codec, what);
+    codec = what['codec'] as Codec;
+    fromURI = what['path'] as String?;
+    fromDataBuffer = what['fromDataBuffer'] as Uint8List?;
+    if (_playerState != PlayerState.isStopped) {
+      throw Exception('Player is not stopped');
+    }
+    _audioPlayerFinishedPlaying = whenFinished;
+    if (_startPlayerCompleter != null) {
+      _logger.w('Killing another startPlayer()');
+      _startPlayerCompleter!.completeError('Killed by another startPlayer()');
+    }
+    try {
+      _startPlayerCompleter = Completer<Duration>();
+      completer = _startPlayerCompleter;
+      var state = await FlutterSoundPlayerPlatform.instance.startPlayer(
+        this,
+        codec: codec,
+        fromDataBuffer: fromDataBuffer,
+        fromURI: fromURI,
+      );
+      _playerState = PlayerState.values[state];
+    } on Exception {
+      _startPlayerCompleter = null;
+      rethrow;
+    }
+    //Duration duration = Duration(milliseconds: retMap['duration'] as int);
+    _logger.d('FS:<--- startPlayer ');
+    return completer!.future;
   }
 
 
@@ -1036,153 +1198,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       await _convertAudio(codec, what);
     }
     _logger.d('FS:<--- _convert ');
-  }
-
-  /// Used to play a sound.
-  //
-  /// - `startPlayer()` has three optional parameters, depending on your sound source :
-  ///    - `fromUri:`  (if you want to play a file or a remote URI)
-  ///    - `fromDataBuffer:` (if you want to play from a data buffer)
-  ///    - `sampleRate` is mandatory if `codec` == `Codec.pcm16`. Not used for other codecs.
-  ///
-  /// You must specify one or the three parameters : `fromUri`, `fromDataBuffer`, `fromStream`.
-  ///
-  /// - You use the optional parameter`codec:` for specifying the audio and file format of the file. Please refer to the [Codec compatibility Table](/guides_codec.html) to know which codecs are currently supported.
-  ///
-  /// - `whenFinished:()` : A lambda function for specifying what to do when the playback will be finished.
-  ///
-  /// Very often, the `codec:` parameter is not useful. Flutter Sound will adapt itself depending on the real format of the file provided.
-  /// But this parameter is necessary when Flutter Sound must do format conversion (for example to play opusOGG on iOS).
-  ///
-  /// `startPlayer()` returns a Duration Future, which is the record duration.
-  ///
-  /// The `fromUri` parameter, if specified, can be one of three posibilities :
-  /// - The URL of a remote file
-  /// - The path of a local file
-  /// - The name of a temporary file (without any slash '/')
-  ///
-  /// Hint: [path_provider](https://pub.dev/packages/path_provider) can be useful if you want to get access to some directories on your device.
-  ///
-  ///
-  /// *Example:*
-  /// ```dart
-  ///         Duration d = await myPlayer.startPlayer(fromURI: 'foo', codec: Codec.aacADTS); // Play a temporary file
-  ///
-  ///         _playerSubscription = myPlayer.onProgress.listen((e)
-  ///         {
-  ///                 // ...
-  ///         });
-  /// }
-  /// ```
-  ///
-  /// *Example:*
-  /// ```dart
-  ///     final fileUri = "https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3";
-  ///
-  ///     Duration d = await myPlayer.startPlayer
-  ///     (
-  ///                 fromURI: fileUri,
-  ///                 codec: Codec.mp3,
-  ///                 whenFinished: ()
-  ///                 {
-  ///                          logger.d( 'I hope you enjoyed listening to this song' );
-  ///                 },
-  ///     );
-  /// ```
-  Future<Duration?> startPlayer({
-    String? fromURI,
-    Uint8List? fromDataBuffer,
-    Codec codec = Codec.aacADTS,
-    int sampleRate = 16000, // Used only with codec == Codec.pcm16
-    int numChannels = 1, // Used only with codec == Codec.pcm16
-    TWhenFinished? whenFinished,
-  }) async {
-    Duration? r;
-    await _lock.synchronized(() async {
-      r = await _startPlayer(
-        fromURI: fromURI,
-        fromDataBuffer: fromDataBuffer,
-        codec: codec,
-        sampleRate: sampleRate,
-        numChannels: numChannels,
-        whenFinished: whenFinished,
-      );
-    });
-    return r;
-  }
-
-  Future<Duration> _startPlayer({
-    String? fromURI,
-    Uint8List? fromDataBuffer,
-    Codec codec = Codec.aacADTS,
-    int sampleRate = 16000, // Used only with codec == Codec.pcm16
-    int numChannels = 1, // Used only with codec == Codec.pcm16
-    TWhenFinished? whenFinished,
-  }) async {
-    _logger.d('FS:---> startPlayer ');
-    await _waitOpen();
-    if (!_isInited ) {
-      throw Exception('Player is not open');
-    }
-
-    if (codec == Codec.pcm16 && fromURI != null) {
-      var tempDir = await getTemporaryDirectory();
-      var path = '${tempDir.path}/flutter_sound_tmp.wav';
-      await tauHelper.pcmToWave(
-        inputFile: fromURI,
-        outputFile: path,
-        numChannels: 1,
-        //bitsPerSample: 16,
-        sampleRate: sampleRate,
-      );
-      fromURI = path;
-      codec = Codec.pcm16WAV;
-    } else if (codec == Codec.pcm16 && fromDataBuffer != null) {
-      fromDataBuffer = await tauHelper.pcmToWaveBuffer(
-          inputBuffer: fromDataBuffer,
-          sampleRate: sampleRate,
-          numChannels: numChannels);
-      codec = Codec.pcm16WAV;
-    }
-    Completer<Duration>? completer;
-
-    await _stop(); // Just in case
-
-    //playerState = PlayerState.isPlaying;
-    var what = <String, dynamic>{
-      'codec': codec,
-      'path': fromURI,
-      'fromDataBuffer': fromDataBuffer,
-    };
-    await _convert(codec, what);
-    codec = what['codec'] as Codec;
-    fromURI = what['path'] as String?;
-    fromDataBuffer = what['fromDataBuffer'] as Uint8List?;
-    if (_playerState != PlayerState.isStopped) {
-      throw Exception('Player is not stopped');
-    }
-    _audioPlayerFinishedPlaying = whenFinished;
-    if (_startPlayerCompleter != null) {
-      _logger.w('Killing another startPlayer()');
-      _startPlayerCompleter!.completeError('Killed by another startPlayer()');
-    }
-    try {
-      _startPlayerCompleter = Completer<Duration>();
-      completer = _startPlayerCompleter;
-      var state = await FlutterSoundPlayerPlatform.instance.startPlayer(
-        this,
-        codec: codec,
-        fromDataBuffer: fromDataBuffer,
-        fromURI: fromURI,
-      );
-      _playerState = PlayerState.values[state];
-    } on Exception {
-      _startPlayerCompleter = null;
-      rethrow;
-    }
-    //Duration duration = Duration(milliseconds: retMap['duration'] as int);
-    _logger.d('FS:<--- startPlayer ');
-    return completer!.future;
   }
 
   /// Starts the Microphone and plays what is recorded.

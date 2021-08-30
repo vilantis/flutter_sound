@@ -86,7 +86,7 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
     _mPlayer!.close();
     _mPlayer = null;
 
-    _mRecorder!.closeAudioSession();
+    _mRecorder!.close();
     _mRecorder = null;
     super.dispose();
   }
@@ -98,7 +98,7 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
         throw RecordingPermissionException('Microphone permission not granted');
       }
     }
-    await _mRecorder!.openAudioSession();
+    await _mRecorder!.open();
     if (!await _mRecorder!.isEncoderSupported(_codec) && kIsWeb) {
       _codec = Codec.opusWebM;
       _mPath = 'tau_file.webm';

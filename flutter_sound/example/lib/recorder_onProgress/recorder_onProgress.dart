@@ -68,7 +68,7 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
     cancelRecorderSubscriptions();
 
     // Be careful : you must `close` the audio session when you have finished with it.
-    _mRecorder.closeAudioSession();
+    _mRecorder.close();
 
     super.dispose();
   }
@@ -87,7 +87,7 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
         throw RecordingPermissionException('Microphone permission not granted');
       }
     }
-    await _mRecorder.openAudioSession();
+    await _mRecorder.open();
     if (!await _mRecorder.isEncoderSupported(_codec) && kIsWeb) {
       _codec = Codec.opusWebM;
       _mPath = 'tau_file.webm';

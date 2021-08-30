@@ -55,6 +55,11 @@ export 'public/tau.dart';
 export 'public/tau_player.dart';
 export 'public/tau_recorder.dart';
 
+/// Node
+/// library node;
+export 'public/nodes/input_nodes.dart';
+export 'public/nodes/tau_codec.dart';
+
 ///
 ///library UI;
 export 'public/ui/recorder_playback_controller.dart';
