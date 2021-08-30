@@ -12,6 +12,10 @@ toc: false
 - Flutter Sound FULL is now correctely linked with Flutter_ffmpeg. This means that if the App needs to access flutter_ffmpeg, it can use either the FULL flavor or the LITE flavor as it wants. [install](https://tau.canardoux.xyz/flutter_sound_install.html#ffmpeg)
 - The V8 API continues to be supported : backward compatibility is Ensured. Side to side the V8 API, a new API V9 is proposed (beta). Please refer to [this migration guide](links_migration_v9).
 
+## 8.3.10
+
+- Remove a dependency to flutter_spinkit which was not used anymore by Flutter Sound. This is a [Pull Request](https://github.com/Canardoux/tau/pull/755) from [Jack Liu](https://github.com/aaassseee). Thanks to him.
+
 ## 8.3.9
 
 - Modify the examples to be able to record on Safari.
