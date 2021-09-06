@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -46,7 +47,7 @@ class Seek extends StatefulWidget {
 class _SeekState extends State<Seek> {
   final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
-  Uint8List? _boumData;
+  Uint8List _boumData = Uint8List(0);
   StreamSubscription? _mPlayerSubscription;
   int pos = 0;
 
@@ -80,12 +81,12 @@ class _SeekState extends State<Seek> {
 
   Future<void> init() async {
     await _mPlayer.open();
-    await _mPlayer.setSubscriptionDuration(Duration(milliseconds: 50));
+    //await _mPlayer.setSubscriptionDuration(Duration(milliseconds: 50));
     _boumData = await getAssetData(_boum);
-    _mPlayerSubscription = _mPlayer.onProgress!.listen((e) {
-      setPos(e.position.inMilliseconds);
-      setState(() {});
-    });
+    //_mPlayerSubscription = _mPlayer.onProgress!.listen((e) {
+      //setPos(e.position.inMilliseconds);
+      //setState(() {});
+    //});
   }
 
   Future<Uint8List> getAssetData(String path) async {
@@ -94,9 +95,11 @@ class _SeekState extends State<Seek> {
   }
 
   void play(TauPlayer? player) async {
-    await player!.startPlayer(
-        fromDataBuffer: _boumData,
-        codec: Codec.aacADTS,
+    await player!.play( from: InputBuffer(_boumData, codec: Aac(AudioFormat.adts)),
+        onProgress: (Duration position, Duration duration){
+        setPos(position.inMilliseconds);
+        setState(() {});
+        },
         whenFinished: () {
           setState(() {});
         });
@@ -104,7 +107,7 @@ class _SeekState extends State<Seek> {
   }
 
   Future<void> stopPlayer(TauPlayer player) async {
-    await player.stopPlayer();
+    await player.stop();
   }
 
   Future<void> setPos(int d) async {
@@ -117,7 +120,7 @@ class _SeekState extends State<Seek> {
   }
 
   Future<void> seek(double d) async {
-    await _mPlayer.seekToPlayer(Duration(milliseconds: d.floor()));
+    await _mPlayer.seekTo(Duration(milliseconds: d.floor()));
     await setPos(d.floor());
   }
 

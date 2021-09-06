@@ -54,6 +54,7 @@ FULL)
   cd flutter_sound
                 #gsed -i  "s/^\/\/ export 'deprecated\/flutter_sound_ffmpeg\.dart/export 'deprecated\/flutter_sound_ffmpeg\.dart/" lib/flutter_sound.dart
 		gsed -i  's/^#  flutter_ffmpeg/  flutter_ffmpeg/' pubspec.yaml
+		gsed -i  's/^#  flutter_ffmpeg/  flutter_ffmpeg/' example/pubspec.yaml
 		gsed -i  's/^const bool _hasFFmpeg = false;$/const bool _hasFFmpeg = true;/' lib/public/util/tau_helper.dart
 		gsed -i  "s/^import 'dummy_ffmpeg.dart';$/import 'package:flutter_ffmpeg\/flutter_ffmpeg.dart';/" lib/public/util/tau_helper.dart
 
@@ -102,6 +103,7 @@ LITE)
   cd flutter_sound
                 #gsed -i  "s/^export 'deprecated\/flutter_sound_ffmpeg\.dart/\/\/ export 'deprecated\/flutter_sound_ffmpeg\.dart/" lib/flutter_sound.dart
 		gsed -i  's/^  flutter_ffmpeg/#  flutter_ffmpeg/' pubspec.yaml
+		gsed -i  's/^  flutter_ffmpeg/#  flutter_ffmpeg/' example/pubspec.yaml
 		gsed -i  's/^const bool _hasFFmpeg = true;$/const bool _hasFFmpeg = false;/'  lib/public/util/tau_helper.dart
 		gsed -i  "s/^import 'package:flutter_ffmpeg\/flutter_ffmpeg.dart';$/import 'dummy_ffmpeg.dart';/" lib/public/util/tau_helper.dart
 

@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -52,8 +53,8 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   bool _mPlayer1IsInited = false;
   bool _mPlayer2IsInited = false;
   bool _mPlayer3IsInited = false;
-  Uint8List? buffer2;
-  Uint8List? buffer3;
+  Uint8List buffer2 = Uint8List(0);
+  Uint8List buffer3 = Uint8List(0);
   String _playerTxt1 = '';
   String _playerTxt2 = '';
   String _playerTxt3 = '';
@@ -116,11 +117,12 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   // -------  Player1 play a remote file -----------------------
 
   void play1() async {
-    await _mPlayer1!.setSubscriptionDuration(Duration(milliseconds: 10));
-    _addListener1();
+    //await _mPlayer1!.setSubscriptionDuration(Duration(milliseconds: 10));
+    //_addListener2();
     await _mPlayer1!.play(
-        from: InputFile(_exampleAudioFilePathMP3),
-        codec: Codec.mp3,
+        from: InputFile(_exampleAudioFilePathMP3, codec: Mp3()),
+        onProgress: _onProgress1,
+        interval: Duration(milliseconds: 10),
         whenFinished: () {
           setState(() {});
         });
@@ -137,21 +139,21 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> stopPlayer1() async {
     cancelPlayerSubscriptions1();
     if (_mPlayer1 != null) {
-      await _mPlayer1!.stopPlayer();
+      await _mPlayer1!.stop();
     }
     setState(() {});
   }
 
   Future<void> pause1() async {
     if (_mPlayer1 != null) {
-      await _mPlayer1!.pausePlayer();
+      await _mPlayer1!.pause();
     }
     setState(() {});
   }
 
   Future<void> resume1() async {
     if (_mPlayer1 != null) {
-      await _mPlayer1!.resumePlayer();
+      await _mPlayer1!.resume();
     }
     setState(() {});
   }
@@ -159,15 +161,19 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   // -------  Player2 play a AAC file -----------------------
 
   void play2() async {
-    await _mPlayer2!.setSubscriptionDuration(Duration(milliseconds: 10));
-    _addListener2();
-    await _mPlayer2!.play(
-        from: InputBuffer(buffer2),
-        codec: Codec.aacADTS,
-        whenFinished: () {
+    if (buffer2 != null)
+    {
+          //await _mPlayer2!.setSubscriptionDuration(Duration(milliseconds: 10));
+          //_addListener2();
+          await _mPlayer2!.play(
+              from: InputBuffer(buffer2, codec: Aac(AudioFormat.adts)),
+              onProgress: _onProgress2,
+              interval: Duration(milliseconds: 10),
+              whenFinished: () {
+                setState(() {});
+              });
           setState(() {});
-        });
-    setState(() {});
+    }
   }
 
   void cancelPlayerSubscriptions2() {
@@ -180,21 +186,21 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> stopPlayer2() async {
     cancelPlayerSubscriptions2();
     if (_mPlayer2 != null) {
-      await _mPlayer2!.stopPlayer();
+      await _mPlayer2!.stop();
     }
     setState(() {});
   }
 
   Future<void> pause2() async {
     if (_mPlayer2 != null) {
-      await _mPlayer2!.pausePlayer();
+      await _mPlayer2!.pause();
     }
     setState(() {});
   }
 
   Future<void> resume2() async {
     if (_mPlayer2 != null) {
-      await _mPlayer2!.resumePlayer();
+      await _mPlayer2!.resume();
     }
     setState(() {});
   }
@@ -202,15 +208,18 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   // -------  Player3 play a MP4 file -----------------------
 
   void play3() async {
-    await _mPlayer3!.setSubscriptionDuration(Duration(milliseconds: 10));
-    _addListener3();
-    await _mPlayer3!.startPlayer(
-        fromDataBuffer: buffer3,
-        codec: Codec.aacMP4,
-        whenFinished: () {
+    if (buffer3 != null) {
+          //await _mPlayer3!.setSubscriptionDuration(Duration(milliseconds: 10));
+          //_addListener3();
+          await _mPlayer3!.play(
+              from: InputBuffer(buffer3, codec: Aac(AudioFormat.mp4  )),
+              onProgress: _onProgress3,
+              interval: Duration(milliseconds: 10),
+              whenFinished: () {
+                setState(() {});
+              });
           setState(() {});
-        });
-    setState(() {});
+    }
   }
 
   void cancelPlayerSubscriptions3() {
@@ -223,37 +232,39 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> stopPlayer3() async {
     cancelPlayerSubscriptions3();
     if (_mPlayer3 != null) {
-      await _mPlayer3!.stopPlayer();
+      await _mPlayer3!.stop();
     }
     setState(() {});
   }
 
   Future<void> pause3() async {
     if (_mPlayer3 != null) {
-      await _mPlayer3!.pausePlayer();
+      await _mPlayer3!.pause();
     }
     setState(() {});
   }
 
   Future<void> resume3() async {
     if (_mPlayer3 != null) {
-      await _mPlayer3!.resumePlayer();
+      await _mPlayer3!.resume();
     }
     setState(() {});
   }
 
   // ------------------------------------------------------------------------------------
 
-  void _addListener1() {
-    cancelPlayerSubscriptions1();
-    _playerSubscription1 = _mPlayer1!.onProgress!.listen((e) {
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
+  //void _addListener1() {
+    //cancelPlayerSubscriptions1();
+    //_playerSubscription1 = _mPlayer1!.onProgress!.listen((e) {
+  void _onProgress1(Duration position, Duration duration)
+  {
+      var date = DateTime.fromMillisecondsSinceEpoch(position.inMilliseconds,
           isUtc: true);
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt1 = txt.substring(0, 8);
       });
-    });
+    //});
   }
 
   Fn? getPlaybackFn1() {
@@ -274,17 +285,19 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     return _mPlayer1!.isPaused ? resume1 : pause1;
   }
 
-  void _addListener2() {
-    cancelPlayerSubscriptions2();
-    _playerSubscription2 = _mPlayer2!.onProgress!.listen((e) {
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
+  //void _addListener2() {
+    //cancelPlayerSubscriptions2();
+    //_playerSubscription2 = _mPlayer2!.onProgress!.listen((e) {
+  void _onProgress2(Duration position, Duration duration) {
+      var date = DateTime.fromMillisecondsSinceEpoch(position.inMilliseconds,
           isUtc: true);
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt2 = txt.substring(0, 8);
       });
-    });
   }
+    //});
+  //}
 
   Fn? getPlaybackFn2() {
     if (!_mPlayer2IsInited || buffer2 == null) {
@@ -304,16 +317,17 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     return _mPlayer2!.isPaused ? resume2 : pause2;
   }
 
-  void _addListener3() {
-    cancelPlayerSubscriptions3();
-    _playerSubscription3 = _mPlayer3!.onProgress!.listen((e) {
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
+  //void _addListener3() {
+    //cancelPlayerSubscriptions3();
+    //_playerSubscription3 = _mPlayer3!.onProgress!.listen((e) {
+  void _onProgress3(Duration position, Duration duration) {
+      var date = DateTime.fromMillisecondsSinceEpoch(position.inMilliseconds,
           isUtc: true);
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt3 = txt.substring(0, 8);
       });
-    });
+    //});
   }
 
   Fn? getPlaybackFn3() {

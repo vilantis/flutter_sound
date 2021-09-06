@@ -85,13 +85,13 @@ class MethodChannelFlutterSoundPlayer extends FlutterSoundPlayerPlatform
 
       case 'pause': // Pause/Resume
         {
-          aPlayer.pause(arg['arg']);
+          aPlayer.pauseCallback(arg['arg']);
         }
         break;
 
         case 'resume': // Pause/Resume
         {
-          aPlayer.resume(arg['arg']);
+          aPlayer.resumeCallback(arg['arg']);
         }
         break;
 

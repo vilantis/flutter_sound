@@ -1,3 +1,11 @@
+---
+title:  "License"
+description: "Flutter Sound License"
+summary: "Flutter Sound License"
+permalink: LICENSE-MPL2.html
+tags: [license]
+keywords: license
+---
 # Mozilla Public License
 
 Version 2.0

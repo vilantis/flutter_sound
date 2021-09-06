@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -200,7 +201,6 @@ class _MyAppState extends State<Demo> {
   ];
 
   StreamSubscription? _recorderSubscription;
-  StreamSubscription? _playerSubscription;
   StreamSubscription? _recordingDataSubscription;
 
   TauPlayer playerModule = TauPlayer();
@@ -224,13 +224,14 @@ class _MyAppState extends State<Demo> {
   double? _duration;
   StreamController<TauFood>? recordingDataController;
   IOSink? sink;
+  StreamController<TauFood> totoController = StreamController();
 
   Future<void> _initializeExample(bool withUI) async {
     await playerModule.close();
     _isAudioPlayer = withUI;
     await playerModule.open(
         withShadeUI: withUI,);
-    await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
+    //await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await recorderModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await initializeDateFormatting();
     await setCodec(_codec);
@@ -281,13 +282,6 @@ class _MyAppState extends State<Demo> {
     }
   }
 
-  void cancelPlayerSubscriptions() {
-    if (_playerSubscription != null) {
-      _playerSubscription!.cancel();
-      _playerSubscription = null;
-    }
-  }
-
   void cancelRecordingDataSubscription() {
     if (_recordingDataSubscription != null) {
       _recordingDataSubscription!.cancel();
@@ -303,7 +297,7 @@ class _MyAppState extends State<Demo> {
   @override
   void dispose() {
     super.dispose();
-    cancelPlayerSubscriptions();
+    //cancelPlayerSubscriptions();
     cancelRecorderSubscriptions();
     cancelRecordingDataSubscription();
     releaseFlauto();
@@ -452,26 +446,29 @@ class _MyAppState extends State<Demo> {
     }
   }
 
-  void _addListeners() {
-    cancelPlayerSubscriptions();
-    _playerSubscription = playerModule.onProgress!.listen((e) {
-      maxDuration = e.duration.inMilliseconds.toDouble();
+  //void _addListeners() {
+    //cancelPlayerSubscriptions();
+    //_playerSubscription = playerModule.onProgress!.listen((e) {
+    void _onProgress(Duration position, Duration duration)
+    {
+      maxDuration = duration.inMilliseconds.toDouble();
       if (maxDuration <= 0) maxDuration = 0.0;
 
       sliderCurrentPosition =
-          min(e.position.inMilliseconds.toDouble(), maxDuration);
+          min(position.inMilliseconds.toDouble(), maxDuration);
       if (sliderCurrentPosition < 0.0) {
         sliderCurrentPosition = 0.0;
       }
 
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
+      var date = DateTime.fromMillisecondsSinceEpoch(position.inMilliseconds,
           isUtc: true);
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt = txt.substring(0, 8);
       });
-    });
-  }
+    //});
+  //}
+    }
 
   Future<Uint8List> _readFileByte(String filePath) async {
     var myUri = Uri.parse(filePath);
@@ -510,6 +507,7 @@ class _MyAppState extends State<Demo> {
       totalLength -= bsize;
     }
   }
+
 
   Future<void> startPlayer() async {
     try {
@@ -576,18 +574,16 @@ class _MyAppState extends State<Demo> {
           startPlayer();
         }, onPaused: (b) {
           if (b) {
-            playerModule.pausePlayer();
+            playerModule.pause();
           } else {
-            playerModule.resumePlayer();
+            playerModule.resume();
           }
         });
       } else if (_media == Media.stream) {
-        await playerModule.startPlayerFromStream(
-          codec: Codec.pcm16, //_codec,
-          numChannels: 1,
-          sampleRate: tSTREAMSAMPLERATE, //tSAMPLERATE,
-        );
-        _addListeners();
+        totoController = StreamController<TauFood>();
+        InputNode from = InputStream(totoController.stream, codec: Pcm( AudioFormat.raw,  depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: tSTREAMSAMPLERATE,));
+        await playerModule.play(from: from);
+        //_addListeners();
         setState(() {});
         await feedHim(audioFilePath!);
         //await finishPlayer();
@@ -595,36 +591,29 @@ class _MyAppState extends State<Demo> {
         return;
       } else {
         if (audioFilePath != null) {
-          await playerModule.play(
-              from: InputFile(audioFilePath),
-              codec: codec,
-              sampleRate: tSTREAMSAMPLERATE,
+          InputNode from = InputFile(audioFilePath, codec: getCodecFromDeprecated(codec), );
+          await playerModule.play(from: from,
+              onProgress: _onProgress,
+              interval: Duration(milliseconds: 10),
               whenFinished: () {
                 playerModule.logger.d('Play finished');
-                setState(() {});
-              });
+                setState(() {});}
+
+                );
         } else if (dataBuffer != null) {
           if (codec == Codec.pcm16) {
-            dataBuffer = await tauHelper.pcmToWaveBuffer(
-              inputBuffer: dataBuffer,
-              numChannels: 1,
-              sampleRate: (_codec == Codec.pcm16 && _media == Media.asset)
-                  ? 48000
-                  : tSAMPLERATE,
-            );
+            dataBuffer = await tauHelper.pcmToWaveBuffer(inputBuffer: dataBuffer,codec: getCodecFromDeprecated(codec) as Pcm,);
             codec = Codec.pcm16WAV;
           }
           await playerModule.play(
-              from: InputBuffer(dataBuffer),
-              sampleRate: tSAMPLERATE,
-              codec: codec,
+              from: InputBuffer(dataBuffer, codec: getCodecFromDeprecated(codec) ),
               whenFinished: () {
                 playerModule.logger.d('Play finished');
                 setState(() {});
               });
         }
       }
-      _addListeners();
+      //_addListeners();
       setState(() {});
       playerModule.logger.d('<--- startPlayer');
     } on Exception catch (err) {
@@ -634,12 +623,8 @@ class _MyAppState extends State<Demo> {
 
   Future<void> stopPlayer() async {
     try {
-      await playerModule.stopPlayer();
+      await playerModule.stop();
       playerModule.logger.d('stopPlayer');
-      if (_playerSubscription != null) {
-        await _playerSubscription!.cancel();
-        _playerSubscription = null;
-      }
       sliderCurrentPosition = 0.0;
     } on Exception catch (err) {
       playerModule.logger.d('error: $err');
@@ -650,9 +635,9 @@ class _MyAppState extends State<Demo> {
   void pauseResumePlayer() async {
     try {
       if (playerModule.isPlaying) {
-        await playerModule.pausePlayer();
+        await playerModule.pause();
       } else {
-        await playerModule.resumePlayer();
+        await playerModule.resume();
       }
     } on Exception catch (err) {
       playerModule.logger.e('error: $err');
@@ -678,7 +663,7 @@ class _MyAppState extends State<Demo> {
     //playerModule.logger.d('-->seekToPlayer');
     try {
       if (playerModule.isPlaying) {
-        await playerModule.seekToPlayer(Duration(milliseconds: milliSecs));
+        await playerModule.seekTo(Duration(milliseconds: milliSecs));
       }
     } on Exception catch (err) {
       playerModule.logger.e('error: $err');
@@ -912,7 +897,7 @@ class _MyAppState extends State<Demo> {
 
   Future<void> setCodec(Codec codec) async {
     _encoderSupported = await recorderModule.isEncoderSupported(codec);
-    _decoderSupported = await playerModule.isDecoderSupported(codec);
+    _decoderSupported = await playerModule.isDecoderSupported(getCodecFromDeprecated(codec));
 
     setState(() {
       _codec = codec;

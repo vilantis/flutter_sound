@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -49,7 +50,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   bool _mPlayerIsInited = false;
   bool _mRecorderIsInited = false;
   bool _mplaybackReady = false;
-  String? _mPath;
+  String _mPath = '';
   StreamSubscription? _mRecordingDataSubscription;
 
   Future<void> _openRecorder() async {
@@ -91,7 +92,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   Future<IOSink> createFile() async {
     var tempDir = await getTemporaryDirectory();
     _mPath = '${tempDir.path}/flutter_sound_example.pcm';
-    var outputFile = File(_mPath!);
+    var outputFile = File(_mPath);
     if (outputFile.existsSync()) {
       await outputFile.delete();
     }
@@ -145,11 +146,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
         _mplaybackReady &&
         _mRecorder!.isStopped &&
         _mPlayer!.isStopped);
-    await _mPlayer!.startPlayer(
-        fromURI: _mPath,
-        sampleRate: tSampleRate,
-        codec: Codec.pcm16,
-        numChannels: 1,
+    await _mPlayer!.play(from: InputFile(_mPath, codec: Pcm( AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono,sampleRate: tSampleRate)),
         whenFinished: () {
           setState(() {});
         }); // The readability of Dart is very special :-(
@@ -157,7 +154,7 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
   }
 
   Future<void> stopPlayer() async {
-    await _mPlayer!.stopPlayer();
+    await _mPlayer!.stop();
   }
 
   _Fn? getPlaybackFn() {

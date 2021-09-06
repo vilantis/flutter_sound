@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -224,7 +225,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// @nodoc
   @deprecated
   @override
-  void pause(int state) async {
+  void pauseCallback(int state) async {
     _logger.d('FS:---> pause ');
     await _lock.synchronized(() async {
       _playerState = PlayerState.values[state];
@@ -240,7 +241,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   /// @nodoc
   @deprecated
   @override
-  void resume(int state) async {
+  void resumeCallback(int state) async {
     _logger.d('FS:---> resume');
     await _lock.synchronized(() async {
       _playerState = PlayerState.values[state];
@@ -408,7 +409,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
     _logger.d('<--- resumePlayerCompleted: $success');
   }
 
-  /// Callback from the &tau; Core. Must not be called by the App
+  /// Callback from the τ Core. Must not be called by the App
   /// @nodoc
   @deprecated
   @override
@@ -2015,5 +2016,107 @@ abstract class Food {
 
   /// use internally by Flutter Sound
   void dummy(FlutterSoundPlayer player) {} // Just to satisfy `dartanalyzer`
+
+}
+
+
+
+/// The track to play by [FlutterSoundPlayer.startPlayerFromTrack()].
+/// @deprecated
+class Track {
+  /// The title of this track
+  String? trackTitle;
+
+  /// The buffer containing the audio file to play
+  Uint8List? dataBuffer;
+
+  /// The name of the author of this track
+  String? trackAuthor;
+
+  /// The path that points to the track audio file
+  String? trackPath;
+
+  /// The URL that points to the album art of the track
+  String? albumArtUrl;
+
+  /// The asset that points to the album art of the track
+  String? albumArtAsset;
+
+  /// The file that points to the album art of the track
+  String? albumArtFile;
+
+  /// The image that points to the album art of the track
+  //final String albumArtImage;
+
+  /// The codec of the audio file to play. If this parameter's value is null
+  /// it will be set to `t_CODEC.DEFAULT`.
+  Codec codec;
+
+  /// The constructor
+  Track({
+    this.trackPath,
+    this.dataBuffer,
+    this.trackTitle,
+    this.trackAuthor,
+    this.albumArtUrl,
+    this.albumArtAsset,
+    this.albumArtFile,
+    this.codec = Codec.defaultCodec,
+  }) {
+    assert((!(trackPath != null && dataBuffer != null)),
+    'You cannot provide both a path and a buffer.');
+  }
+
+  /// Convert this object to a [Map] containing the properties of this object
+  /// as values.
+  Map<String, dynamic> toMap() {
+    final map = {
+      'path': trackPath,
+      'dataBuffer': dataBuffer,
+      'title': trackTitle,
+      'author': trackAuthor,
+      'albumArtUrl': albumArtUrl,
+      'albumArtAsset': albumArtAsset,
+      'albumArtFile': albumArtFile,
+      'bufferCodecIndex': codec.index,
+    };
+
+    return map;
+  }
+}
+
+
+
+/// Used to stream data about the position of the
+/// playback as playback proceeds.
+/// @nodoc
+@deprecated
+class PlaybackDisposition {
+  /// The duration of the media.
+  final Duration duration;
+
+  /// The current position within the media
+  /// that we are playing.
+  final Duration position;
+
+  /// A convenience ctor. If you are using a stream builder
+  /// you can use this to set initialData with both duration
+  /// and postion as 0.
+  PlaybackDisposition.zero()
+      : position = Duration(seconds: 0),
+        duration = Duration(seconds: 0);
+
+  /// The constructor
+  PlaybackDisposition({
+    this.position = Duration.zero,
+    this.duration = Duration.zero,
+  });
+
+  ///
+  @override
+  String toString() {
+    return 'duration: $duration, '
+        'position: $position';
+  }
 
 }

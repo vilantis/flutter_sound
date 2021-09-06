@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -62,6 +63,7 @@ class _LivePlaybackWithoutBackPressureState
     extends State<LivePlaybackWithoutBackPressure> {
   TauPlayer? _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
+  StreamController<TauFood> totoController = StreamController<TauFood>();
 
   @override
   void initState() {
@@ -91,7 +93,7 @@ class _LivePlaybackWithoutBackPressureState
     var totalLength = data.length;
     while (totalLength > 0 && _mPlayer != null && !_mPlayer!.isStopped) {
       var ln = totalLength > tBlockSize ? tBlockSize : totalLength;
-      _mPlayer!.foodSink!.add(TauFoodData(data.sublist(start, start + ln)));
+      totoController.sink.add(TauFoodData(data.sublist(start, start + ln)));
       totalLength -= ln;
       start += ln;
     }
@@ -99,18 +101,16 @@ class _LivePlaybackWithoutBackPressureState
 
   void play() async {
     assert(_mPlayerIsInited && _mPlayer!.isStopped);
-    await _mPlayer!.startPlayerFromStream(
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: tSampleRate,
-    );
+    totoController = StreamController<TauFood>();
+    InputNode input = InputStream(totoController.stream, codec: Pcm( AudioFormat.raw,  depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: tSampleRate,));
+    await _mPlayer!.play(from: input);
     setState(() {});
     var data = await getAssetData('assets/samples/sample.pcm');
     feedHim(data);
     if (_mPlayer != null) {
       // We must not do stopPlayer() directely //await stopPlayer();
-      _mPlayer!.foodSink!.add(TauFoodEvent(() async {
-        await _mPlayer!.stopPlayer();
+      totoController.sink.add(TauFoodEvent(() async {
+        await _mPlayer!.stop();
         setState(() {});
       }));
     }
@@ -125,7 +125,7 @@ class _LivePlaybackWithoutBackPressureState
 
   Future<void> stopPlayer() async {
     if (_mPlayer != null) {
-      await _mPlayer!.stopPlayer();
+      await _mPlayer!.stop();
     }
   }
 

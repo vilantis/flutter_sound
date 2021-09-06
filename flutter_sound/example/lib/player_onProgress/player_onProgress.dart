@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -45,10 +46,11 @@ class PlayerOnProgress extends StatefulWidget {
 class _PlayerOnProgressState extends State<PlayerOnProgress> {
   final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
-  double _mSubscriptionDuration = 0;
-  Uint8List? _boumData;
+  //double _mSubscriptionDuration = 0;
+  Uint8List _boumData = Uint8List(0);
   StreamSubscription? _mPlayerSubscription;
   int pos = 0;
+  double _interval = 0.0;
 
   @override
   void initState() {
@@ -81,11 +83,11 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
   Future<void> init() async {
     await _mPlayer.open();
     _boumData = await getAssetData(_boum);
-    _mPlayerSubscription = _mPlayer.onProgress!.listen((e) {
-      setState(() {
-        pos = e.position.inMilliseconds;
-      });
-    });
+    //_mPlayerSubscription = _mPlayer.onProgress!.listen((e) {
+      //setState(() {
+        //pos = e.position.inMilliseconds;
+      //});
+    //});
   }
 
   Future<Uint8List> getAssetData(String path) async {
@@ -96,9 +98,13 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
   // -------  Here is the code to playback  -----------------------
 
   void play(TauPlayer? player) async {
-    await player!.startPlayer(
-        fromDataBuffer: _boumData,
-        codec: Codec.aacADTS,
+    await player!.play( from: InputBuffer(_boumData, codec: Aac(AudioFormat.adts)),
+        onProgress: (Duration position, Duration duration) {
+          setState(() {
+            pos = position.inMilliseconds;
+          });
+        },
+        interval: Duration(milliseconds: _interval.floor()),
         whenFinished: () {
           setState(() {});
         });
@@ -106,18 +112,9 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
   }
 
   Future<void> stopPlayer(TauPlayer player) async {
-    await player.stopPlayer();
+    await player.stop();
   }
 
-  Future<void> setSubscriptionDuration(
-      double d) async // v is between 0.0 and 2000 (milliseconds)
-  {
-    _mSubscriptionDuration = d;
-    setState(() {});
-    await _mPlayer.setSubscriptionDuration(
-      Duration(milliseconds: d.floor()),
-    );
-  }
 
   // --------------------- UI -------------------
 
@@ -127,7 +124,7 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
     }
     return player!.isStopped
         ? () {
-            play(player);
+            play(player,);
           }
         : () {
             stopPlayer(player).then((value) => setState(() {}));
@@ -171,10 +168,10 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
           ]),
           Text('Subscription Duration:'),
           Slider(
-            value: _mSubscriptionDuration,
+            value: _interval,
             min: 0.0,
             max: 2000.0,
-            onChanged: setSubscriptionDuration,
+            onChanged: (double d) { _interval = d;},
             //divisions: 100
           ),
         ]),

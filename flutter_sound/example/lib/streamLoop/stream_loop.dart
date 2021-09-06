@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -46,6 +47,7 @@ class _StreamLoopState extends State<StreamLoop> {
   TauPlayer? _mPlayer = TauPlayer();
   TauRecorder? _mRecorder = TauRecorder();
   bool _isInited = false;
+  StreamController<TauFood> totoStream = StreamController<TauFood>();
 
   Future<void> init() async {
     await _mRecorder!.open();
@@ -89,21 +91,18 @@ class _StreamLoopState extends State<StreamLoop> {
 
   Future<void>? stopPlayer() {
     if (_mPlayer != null) {
-      return _mPlayer!.stopPlayer();
+      return _mPlayer!.stop();
     }
     return null;
   }
 
   Future<void> record() async {
-    await _mPlayer!.startPlayerFromStream(
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: _sampleRatePlayer,
-    );
+    totoStream = StreamController<TauFood>();
+    await _mPlayer!.play( from: InputStream(totoStream.stream, codec: Pcm(AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: _sampleRatePlayer)));
 
     await _mRecorder!.startRecorder(
       codec: Codec.pcm16,
-      toStream: _mPlayer!.foodSink, // ***** THIS IS THE LOOP !!! *****
+      // !!!!!!!!!!!!!!!    TODO toStream: totoStream.sink, // ***** THIS IS THE LOOP !!! *****
       sampleRate: _sampleRateRecorder,
       numChannels: 1,
     );
@@ -115,7 +114,7 @@ class _StreamLoopState extends State<StreamLoop> {
       await _mRecorder!.stopRecorder();
     }
     if (_mPlayer != null) {
-      await _mPlayer!.stopPlayer();
+      await _mPlayer!.stop();
     }
     setState(() {});
   }

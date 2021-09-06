@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
- * This file is part of Flutter-Sound.
+ * This file is part of The τ Project.
  *
- * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * The τ Project is free software: you can redistribute it and/or modify
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
- * Flutter-Sound is distributed in the hope that it will be useful,
+ * The τ Project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 const RECORDER_VERSION = '8.2.0'
@@ -310,15 +311,15 @@ class FlutterSoundRecorder {
                                                                 var fileReader = new FileReader();
                                                                 xhr.open("GET", url, true);
                                                                 xhr.responseType = "arraybuffer";
-                        
-                        
+
+
                                                                 xhr.addEventListener("load", function ()
                                                                 {
                                                                         if (xhr.status === 200)
                                                                         {
                                                                                 // Create a blob from the response
                                                                                 blob = new Blob([xhr.response], {type: "audio/webm\;codecs=opus"});
-                        
+
                                                                                 // onload needed since Google Chrome doesn't support addEventListener for FileReader
                                                                                 fileReader.onload = function (evt)
                                                                                 {

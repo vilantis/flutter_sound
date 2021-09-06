@@ -1,20 +1,22 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+
 /// ----------
 ///
 /// TauHelper module is for handling audio files and buffers.
@@ -35,11 +37,11 @@ import 'package:logger/logger.dart' show Level, Logger;
 import '../../flutter_sound.dart';
 import 'wave_header.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dummy_ffmpeg.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 /// The TauHelper singleton for accessing the helpers functions
 TauHelper tauHelper = TauHelper._internal(); // Singleton
-const bool _hasFFmpeg = false;
+const bool _hasFFmpeg = true;
 
 /// TauHelper class is for handling audio files and buffers.
 /// Most of those utilities use FFmpeg, so are not available in the LITE flavor of Flutter Sound.
@@ -170,6 +172,7 @@ class TauHelper {
   Future<void> waveToPCM({
     required String inputFile,
     required String outputFile,
+    required TauCodec codec,
   }) async {
     var filIn = File(inputFile);
     var filOut = File(outputFile);
@@ -203,10 +206,7 @@ class TauHelper {
   Future<void> pcmToWave({
     required String inputFile,
     required String outputFile,
-
-    /// Stereophony is not yet implemented
-    int numChannels = 1,
-    int sampleRate = 16000,
+    required Pcm codec,
   }) async {
     var filIn = File(inputFile);
     var filOut = File(outputFile);
@@ -217,8 +217,8 @@ class TauHelper {
 
     var header = WaveHeader(
       WaveHeader.formatPCM,
-      numChannels = numChannels, //
-      sampleRate = sampleRate,
+      codec.nbrChannels(), //
+      codec.sampleRate,
       16, // 16 bits per byte
       size, // total number of bytes
     );
@@ -233,19 +233,15 @@ class TauHelper {
   ///
   /// Adds a WAVE header in front of the PCM data
   /// It adds a `Wave` envelop in front of the PCM buffer, so that the file can be played back with `startPlayerFromBuffer()`.
-  ///
-  /// Note: the parameters `numChannels` and `sampleRate` **are mandatory, and must match the actual PCM data**. [See here](doc/codec.md#note-on-raw-pcm-and-wave-files) a discussion about `Raw PCM` and `WAVE` file format.
   Future<Uint8List> pcmToWaveBuffer({
     required Uint8List inputBuffer,
-    int numChannels = 1,
-    int sampleRate = 16000,
-    //int bitsPerSample,
+    required Pcm codec,
   }) async {
     var size = inputBuffer.length;
     var header = WaveHeader(
       WaveHeader.formatPCM,
-      numChannels,
-      sampleRate,
+      codec.nbrChannels(),
+      codec.sampleRate,
       16,
       size, // total number of bytes
     );

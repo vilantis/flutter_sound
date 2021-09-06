@@ -1,19 +1,20 @@
 /*
- * Copyright 2018, 2019, 2020 Dooboolab.
+ * Copyright 2018, 2019, 2020, 2021 Dooboolab.
  *
  * This file is part of Flutter-Sound.
  *
  * Flutter-Sound is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3 (LGPL-V3), as published by
- * the Free Software Foundation.
+ * it under the terms of the Mozilla Public License version 2 (MPL2.0), as published by
+ * the Mozilla organization.
  *
  * Flutter-Sound is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MPL General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
 import 'dart:async';
@@ -128,9 +129,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
       print('`convertFile` not successful');
       return; // Something bad. Perhaps we are running the LITE flavor
     }
-    await _mPlayer!.startPlayer(
-        codec: Codec.mp3,
-        fromURI: _mPathMP3,
+    await _mPlayer!.play( from: InputFile(_mPathMP3, codec: Mp3()),
         whenFinished: () {
           setState(() {});
         });
@@ -138,7 +137,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
   }
 
   void stopPlayer() {
-    _mPlayer!.stopPlayer().then((value) {
+    _mPlayer!.stop().then((value) {
       setState(() {});
     });
   }

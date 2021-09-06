@@ -1,3 +1,11 @@
+---
+title:  "License"
+description: "Tau License"
+summary: "Flutter Sound License"
+permalink: LICENSE-GPL3.html
+tags: [license]
+keywords: license
+---
 # GNU GENERAL PUBLIC LICENSE
 
 Version 3, 29 June 2007
