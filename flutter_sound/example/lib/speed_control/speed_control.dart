@@ -84,7 +84,9 @@ class _SpeedControlState extends State<SpeedControl> {
   // -------  Here is the code to playback  -----------------------
 
   void play(TauPlayer? player) async {
-    await player!.play( from: InputBuffer( _boumData, codec: Aac(AudioFormat.adts)),
+    await player!.play(
+        from: InputBuffer( _boumData, codec: Aac(AudioFormat.adts)),
+        to: DefaultOutputDevice(),
         whenFinished: () {
           setState(() {});
         });

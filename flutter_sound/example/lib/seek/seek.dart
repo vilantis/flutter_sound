@@ -95,7 +95,9 @@ class _SeekState extends State<Seek> {
   }
 
   void play(TauPlayer? player) async {
-    await player!.play( from: InputBuffer(_boumData, codec: Aac(AudioFormat.adts)),
+    await player!.play(
+        from: InputBuffer(_boumData, codec: Aac(AudioFormat.adts)),
+        to: DefaultOutputDevice(),
         onProgress: (Duration position, Duration duration){
         setPos(position.inMilliseconds);
         setState(() {});

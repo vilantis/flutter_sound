@@ -101,6 +101,10 @@ class Opus extends TauCodec {
       default: throw Exception ('Bad Audio Format');
     }
   }
+
+  /* ctor */ Opus.ogg() : this(AudioFormat.ogg);
+  /* ctor */ Opus.caf() : this(AudioFormat.caf);
+  /* ctor */ Opus.webm() : this(AudioFormat.webm);
 }
 
 class Vorbis extends TauCodec {
@@ -113,6 +117,9 @@ class Vorbis extends TauCodec {
       default: throw Exception ('Bad Audio Format');
     }
   }
+
+  /* ctor */ Vorbis.ogg() : this(AudioFormat.ogg);
+  /* ctor */ Vorbis.webm() : this(AudioFormat.webm);
 }
 
 class Mp3  extends TauCodec {
@@ -133,21 +140,24 @@ class Aac extends TauCodec {
       default: throw Exception ('Bad Audio Format');
     }
   }
+
+  /* ctor */Aac.adts() : this(AudioFormat.adts);
+  /* ctor */Aac.mp4() : this(AudioFormat.mp4);
 }
 
 
 class Flac  extends TauCodec {
-  /* ctor */ Mp3() {
+  /* ctor */ Flac() {
     deprecatedCodec = Codec.flac;
     audioFormat = AudioFormat.flac;
   }
 }
 
 class Pcm extends TauCodec {
-  Endianness endianness;
-  Depth depth;
-  NbChannels nbChannels;
-  int sampleRate;
+  Endianness? endianness;
+  Depth? depth;
+  NbChannels? nbChannels;
+  int? sampleRate;
 
   /* ctor */ Pcm(AudioFormat audioFormat,{
     required this.depth,
@@ -167,9 +177,24 @@ class Pcm extends TauCodec {
       default: throw Exception ('Bad Audio Format');
     }
   }
-  int nbrChannels() => (nbChannels == NbChannels.mono) ? 1 : 2;
+
+  /* ctor */ Pcm.wav() {
+    this.audioFormat = AudioFormat.wav;
+    deprecatedCodec = Codec.pcm16WAV;
+  }
+
+  /* ctor */ Pcm.aiff() {
+    this.audioFormat = AudioFormat.aiff;
+    deprecatedCodec = Codec.pcm16WAV;
+  }
+
+
+  int nbrChannels() => (nbChannels == NbChannels.stereo) ? 2 : 1;
   int nDepth() {
-    switch (depth)
+    if (depth == null) {
+      return 0;
+    }
+    switch (depth!)
     {
       case Depth.int16: return 16;
       case Depth.int8: return 8;
@@ -188,9 +213,12 @@ class Amr extends TauCodec
     {
       case AudioFormat.nb: deprecatedCodec = Codec.amrNB; break;
       case AudioFormat.wb: deprecatedCodec = Codec.amrWB; break;
+      default: throw Exception ('Bad Audio Format');
     }
   }
 
+  /* ctor */Amr.wb() : this(AudioFormat.wb);
+  /* ctor */Amr.nb() : this(AudioFormat.nb);
 }
 
 /// Get the new API9 TauCodec from the old API6 Codec

@@ -121,6 +121,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     //_addListener2();
     await _mPlayer1!.play(
         from: InputFile(_exampleAudioFilePathMP3, codec: Mp3()),
+        to: DefaultOutputDevice(),
         onProgress: _onProgress1,
         interval: Duration(milliseconds: 10),
         whenFinished: () {
@@ -167,6 +168,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
           //_addListener2();
           await _mPlayer2!.play(
               from: InputBuffer(buffer2, codec: Aac(AudioFormat.adts)),
+              to: DefaultOutputDevice(),
               onProgress: _onProgress2,
               interval: Duration(milliseconds: 10),
               whenFinished: () {
@@ -213,6 +215,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
           //_addListener3();
           await _mPlayer3!.play(
               from: InputBuffer(buffer3, codec: Aac(AudioFormat.mp4  )),
+              to: DefaultOutputDevice(),
               onProgress: _onProgress3,
               interval: Duration(milliseconds: 10),
               whenFinished: () {

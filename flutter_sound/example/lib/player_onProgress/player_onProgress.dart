@@ -99,6 +99,7 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
 
   void play(TauPlayer? player) async {
     await player!.play( from: InputBuffer(_boumData, codec: Aac(AudioFormat.adts)),
+        to: DefaultOutputDevice(),
         onProgress: (Duration position, Duration duration) {
           setState(() {
             pos = position.inMilliseconds;

@@ -103,7 +103,7 @@ class _LivePlaybackWithoutBackPressureState
     assert(_mPlayerIsInited && _mPlayer!.isStopped);
     totoController = StreamController<TauFood>();
     InputNode input = InputStream(totoController.stream, codec: Pcm( AudioFormat.raw,  depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: tSampleRate,));
-    await _mPlayer!.play(from: input);
+    await _mPlayer!.play(from: input, to: DefaultOutputDevice(),);
     setState(() {});
     var data = await getAssetData('assets/samples/sample.pcm');
     feedHim(data);

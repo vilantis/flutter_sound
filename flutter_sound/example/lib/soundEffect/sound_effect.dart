@@ -69,7 +69,9 @@ class _SoundEffectState extends State<SoundEffect> {
     );
     StreamController<TauFood> totoController = StreamController<TauFood>();
     await _mPlayer!.play(
-      from: InputStream(totoController.stream, codec: Pcm( AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: _tSampleRate,),),);
+      from: InputStream(totoController.stream, codec: Pcm( AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: _tSampleRate,),),
+      to: DefaultOutputDevice(),
+    );
   }
 
   @override

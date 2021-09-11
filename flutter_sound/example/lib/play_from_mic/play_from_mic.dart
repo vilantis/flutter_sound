@@ -78,7 +78,7 @@ class _PlayFromMicState extends State<PlayFromMic> {
   // -------  Here is the code to play from the microphone -----------------------
 
   void play() async {
-    await _mPlayer!.play(from: Mic());
+    await _mPlayer!.play(from: Mic(), to: DefaultOutputDevice(),);
     setState(() {});
   }
 

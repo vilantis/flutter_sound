@@ -102,16 +102,14 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
 
   void record() {
     _mRecorder!
-        .startRecorder(
-      toFile: _mPathAAC,
-    )
+        .record(from: DefaultInputDevice(), to: OutputFile(_mPathAAC))
         .then((value) {
       setState(() {});
     });
   }
 
   void stopRecorder() async {
-    await _mRecorder!.stopRecorder().then((value) {
+    await _mRecorder!.stop().then((value) {
       setState(() {
         //var url = value;
         _mplaybackReady = true;
@@ -130,6 +128,7 @@ class _ConvertToMp3State extends State<ConvertToMp3> {
       return; // Something bad. Perhaps we are running the LITE flavor
     }
     await _mPlayer!.play( from: InputFile(_mPathMP3, codec: Mp3()),
+        to: DefaultOutputDevice(),
         whenFinished: () {
           setState(() {});
         });

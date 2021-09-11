@@ -111,18 +111,17 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
         sink.add(buffer.data!);
       }
     });
-    await _mRecorder!.startRecorder(
-      toStream: recordingDataController.sink,
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: tSampleRate,
-    );
+    await _mRecorder!.record(
+      from: DefaultInputDevice(),
+      to: OutputStream(recordingDataController.sink,
+      codec: Pcm(AudioFormat.raw, sampleRate: tSampleRate, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono),
+    ));
     setState(() {});
   }
   // --------------------- (it was very simple, wasn't it ?) -------------------
 
   Future<void> stopRecorder() async {
-    await _mRecorder!.stopRecorder();
+    await _mRecorder!.stop();
     if (_mRecordingDataSubscription != null) {
       await _mRecordingDataSubscription!.cancel();
       _mRecordingDataSubscription = null;
@@ -146,7 +145,9 @@ class _RecordToStreamExampleState extends State<RecordToStreamExample> {
         _mplaybackReady &&
         _mRecorder!.isStopped &&
         _mPlayer!.isStopped);
-    await _mPlayer!.play(from: InputFile(_mPath, codec: Pcm( AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono,sampleRate: tSampleRate)),
+    await _mPlayer!.play(from: InputFile(_mPath, codec: Pcm( AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono,sampleRate: tSampleRate),
+                        ),
+        to: DefaultOutputDevice(),
         whenFinished: () {
           setState(() {});
         }); // The readability of Dart is very special :-(

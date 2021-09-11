@@ -30,6 +30,7 @@ import 'dart:typed_data' show Uint8List;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_sound_platform_interface/flutter_sound_platform_interface.dart';
 import 'package:flutter_sound_platform_interface/flutter_sound_player_platform_interface.dart';
+import 'package:flutter_sound_platform_interface/flutter_sound_recorder_platform_interface.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:path_provider/path_provider.dart';
 import 'package:synchronized/synchronized.dart';
@@ -39,6 +40,7 @@ import '../../flutter_sound.dart';
 
 /// Tau nodes
 abstract class TauNode {
+  TauCodec codec = DefaultCodec();
 
 }
 
@@ -47,7 +49,6 @@ abstract class TauNode {
 
 /// An InputNode is a node with one output channel and no input channel
 abstract class InputNode  extends TauNode {
-  TauCodec codec = DefaultCodec();
   TauTrack? track;
 }
 
@@ -125,22 +126,53 @@ class InputAsset extends InputNode {
 
 /// An InputDevice can be the Mic, The Blutooth mic, ...
 abstract class InputDevice extends InputNode {
+  AudioSource deprecatedAudioSource = AudioSource.defaultSource;
 
 }
+
+
+/*
+enum AudioSource {
+  defaultSource,
+  microphone,
+  voiceDownlink, // (it does not work, at least on Android. Probably problems with the authorization )
+  camCorder,
+  remote_submix,
+  unprocessed,
+  voice_call,
+  voice_communication,
+  voice_performance,
+  voice_recognition,
+  voiceUpLink,// (it does not work, at least on Android. Probably problems with the authorization )
+  bluetoothHFP,
+  headsetMic,
+  lineIn,
+}
+*/
+
+
+/// The defaultInputDevice is a possible source for a player playback
+/// The codec is platform dependant
+class DefaultInputDevice extends InputDevice {
+// Maybe a ctor with the codec
+/* ctor */ DefaultInputDevice() { deprecatedAudioSource = AudioSource.defaultSource;}
+}
+
+
 
 /// The mic is a possible source for a player playback
 /// The codec is platform dependant
 class Mic extends InputDevice {
 // Maybe a ctor with the codec
+/* ctor */ Mic() { deprecatedAudioSource = AudioSource.microphone;}
 }
 
 /// The Blue Tooth Microphone is a possible source for a player playback
 /// The codec is platform dependant
-class MicBT extends InputDevice {
+class HeadsetMic extends InputDevice {
 // Maybe a ctor with the codec
+/* ctor */ Mic() { deprecatedAudioSource = AudioSource.headsetMic;}
 }
-
-
 
 /// A sound generator is a possible source for a player playback
 class SoundGenerator extends InputNode {
@@ -170,19 +202,49 @@ class OutputBuffer extends OutputNode {
 
 /// An OutputFile is a possible sink for a Recorder
 class OutputFile extends OutputNode {
+  String uri;
+  /* ctor */ OutputFile(this.uri, { TauCodec? codec }){
+    this.codec = (codec != null) ? codec : DefaultCodec();
+  }
+
+
+  Future<OutputFile> toWave() async {
+    Pcm pcmCodec =  codec as Pcm;
+    var tempDir = await getTemporaryDirectory();
+    var path = '${tempDir.path}/flutter_sound_tmp.wav';
+    await tauHelper.pcmToWave(
+      inputFile: uri,
+      outputFile: path,
+      codec: pcmCodec,
+    );
+    return OutputFile(path, codec: Pcm(AudioFormat.wav, sampleRate: pcmCodec.sampleRate, nbChannels: pcmCodec.nbChannels, endianness: pcmCodec.endianness, depth: pcmCodec.depth));
+  }
 
 }
 
 /// An OutputStream is a possible sink for a Recorder
 /// The codec is always RAW-PCM
 class OutputStream extends OutputNode {
+  StreamSink<TauFood> stream;
+  /* ctor */ OutputStream(this.stream, {Pcm? codec}){
+    this.codec = (codec != null) ? codec : DefaultCodec();
+  }
 
 }
+
+
 
 /// A Output Device can be the Speaker, the Ear Phone or a Blue Tooth Headphone
 class OutputDevice  extends OutputNode {
 
 }
+
+
+/// The DefaultOutputDevice is a possible sink for a Recorder
+class DefaultOutputDevice extends OutputDevice {
+
+}
+
 
 /// The Speaker is a possible sink for a Recorder
 class Speaker extends OutputDevice {
@@ -199,6 +261,8 @@ class Earphone extends OutputDevice {
 class HeadPhoneBT extends OutputDevice {
 
 }
+
+
 
 
 // ------------------------------------------------------ Filter Node -----------------------------------------------

@@ -72,6 +72,7 @@ class _LogLevelState extends State<LogLevel> {
 
   void play() async {
     await _mPlayer!.play( from: InputFile(_exampleAudioFilePathMP3, codec: Mp3() ),
+        to: DefaultOutputDevice(),
         whenFinished: () {
           setState(() {});
         });

@@ -83,7 +83,9 @@ class _VolumeControlState extends State<VolumeControl> {
   // -------  Here is the code to playback a remote file -----------------------
 
   void play(TauPlayer? player, String uri) async {
-    await player!.play( from: InputFile(uri, codec: Mp3()),
+    await player!.play(
+        from: InputFile(uri, codec: Mp3()),
+        to: DefaultOutputDevice(),
         whenFinished: () {
           setState(() {});
         });

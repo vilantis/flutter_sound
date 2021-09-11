@@ -31,7 +31,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-// If someone update the following comment, please update also the Examples/README.md file and the code inside Examples/lib/demo/main.dart
 /*
  * This is a Demo of what it is possible to do with Flutter Sound.
  * The code of this Demo app is not so simple and unfortunately not very clean :-( .
@@ -200,7 +199,6 @@ class _MyAppState extends State<Demo> {
     'https://tau.canardoux.xyz/web_example/assets/extract/03-vorbis.webm', // 'assets/samples/sample_vorbis.webm', // vorbisWebM
   ];
 
-  StreamSubscription? _recorderSubscription;
   StreamSubscription? _recordingDataSubscription;
 
   TauPlayer playerModule = TauPlayer();
@@ -231,8 +229,6 @@ class _MyAppState extends State<Demo> {
     _isAudioPlayer = withUI;
     await playerModule.open(
         withShadeUI: withUI,);
-    //await playerModule.setSubscriptionDuration(Duration(milliseconds: 10));
-    await recorderModule.setSubscriptionDuration(Duration(milliseconds: 10));
     await initializeDateFormatting();
     await setCodec(_codec);
   }
@@ -245,7 +241,7 @@ class _MyAppState extends State<Demo> {
       }
     }
     await recorderModule.open();
-    if (!await recorderModule.isEncoderSupported(_codec) && kIsWeb) {
+    if (!await recorderModule.isEncoderSupported(getCodecFromDeprecated(_codec)) && kIsWeb) {
       _codec = Codec.opusWebM;
     }
   }
@@ -275,13 +271,6 @@ class _MyAppState extends State<Demo> {
     init();
   }
 
-  void cancelRecorderSubscriptions() {
-    if (_recorderSubscription != null) {
-      _recorderSubscription!.cancel();
-      _recorderSubscription = null;
-    }
-  }
-
   void cancelRecordingDataSubscription() {
     if (_recordingDataSubscription != null) {
       _recordingDataSubscription!.cancel();
@@ -298,7 +287,6 @@ class _MyAppState extends State<Demo> {
   void dispose() {
     super.dispose();
     //cancelPlayerSubscriptions();
-    cancelRecorderSubscriptions();
     cancelRecordingDataSubscription();
     releaseFlauto();
   }
@@ -348,49 +336,48 @@ class _MyAppState extends State<Demo> {
             sink!.add(buffer.data!);
           }
         });
-        await recorderModule.startRecorder(
-          toStream: recordingDataController!.sink,
+        await recorderModule.record(
+          from: DefaultInputDevice(),
+          to: OutputStream(recordingDataController!.sink,
 
-          codec: _codec,
-          numChannels: 1,
-          sampleRate: tSTREAMSAMPLERATE, //tSAMPLERATE,
-        );
+          codec: Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: tSTREAMSAMPLERATE),
+        ));
       } else {
-        await recorderModule.startRecorder(
-          toFile: path,
-          codec: _codec,
-          bitRate: 8000,
-          numChannels: 1,
-          sampleRate: (_codec == Codec.pcm16) ? tSTREAMSAMPLERATE : tSAMPLERATE,
+        await recorderModule.record(
+          from: DefaultInputDevice(),
+          to: OutputFile(path,
+          codec: getCodecFromDeprecated(_codec), //Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: (_codec == Codec.pcm16) ? tSTREAMSAMPLERATE : tSAMPLERATE,),
+          )
         );
       }
       recorderModule.logger.d('startRecorder');
-
-      _recorderSubscription = recorderModule.onProgress!.listen((e) {
-        var date = DateTime.fromMillisecondsSinceEpoch(
-            e.duration.inMilliseconds,
-            isUtc: true);
-        var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
-
-        setState(() {
-          _recorderTxt = txt.substring(0, 8);
-          _dbLevel = e.decibels;
-        });
-      });
 
       setState(() {
         _isRecording = true;
         _path[_codec.index] = path;
       });
+
     } on Exception catch (err) {
       recorderModule.logger.e('startRecorder error: $err');
       setState(() {
         stopRecorder();
         _isRecording = false;
         cancelRecordingDataSubscription();
-        cancelRecorderSubscriptions();
       });
     }
+  }
+
+
+  void _onRecorderProgress(Duration position, double decibels) {
+  var date = DateTime.fromMillisecondsSinceEpoch(
+      position.inMilliseconds,
+  isUtc: true);
+  var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
+
+  setState(() {
+  _recorderTxt = txt.substring(0, 8);
+  _dbLevel = decibels;
+  });
   }
 
   Future<void> getDuration() async {
@@ -414,9 +401,8 @@ class _MyAppState extends State<Demo> {
 
   void stopRecorder() async {
     try {
-      await recorderModule.stopRecorder();
+      await recorderModule.stop();
       recorderModule.logger.d('stopRecorder');
-      cancelRecorderSubscriptions();
       cancelRecordingDataSubscription();
       await getDuration();
     } on Exception catch (err) {
@@ -582,7 +568,7 @@ class _MyAppState extends State<Demo> {
       } else if (_media == Media.stream) {
         totoController = StreamController<TauFood>();
         InputNode from = InputStream(totoController.stream, codec: Pcm( AudioFormat.raw,  depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: tSTREAMSAMPLERATE,));
-        await playerModule.play(from: from);
+        await playerModule.play(from: from, to: DefaultOutputDevice() );
         //_addListeners();
         setState(() {});
         await feedHim(audioFilePath!);
@@ -593,6 +579,7 @@ class _MyAppState extends State<Demo> {
         if (audioFilePath != null) {
           InputNode from = InputFile(audioFilePath, codec: getCodecFromDeprecated(codec), );
           await playerModule.play(from: from,
+              to: DefaultOutputDevice(),
               onProgress: _onProgress,
               interval: Duration(milliseconds: 10),
               whenFinished: () {
@@ -607,6 +594,7 @@ class _MyAppState extends State<Demo> {
           }
           await playerModule.play(
               from: InputBuffer(dataBuffer, codec: getCodecFromDeprecated(codec) ),
+              to: DefaultOutputDevice(),
               whenFinished: () {
                 playerModule.logger.d('Play finished');
                 setState(() {});
@@ -648,9 +636,9 @@ class _MyAppState extends State<Demo> {
   void pauseResumeRecorder() async {
     try {
       if (recorderModule.isPaused) {
-        await recorderModule.resumeRecorder();
+        await recorderModule.resume();
       } else {
-        await recorderModule.pauseRecorder();
+        await recorderModule.pause();
         assert(recorderModule.isPaused);
       }
     } on Exception catch (err) {
@@ -896,7 +884,7 @@ class _MyAppState extends State<Demo> {
   }
 
   Future<void> setCodec(Codec codec) async {
-    _encoderSupported = await recorderModule.isEncoderSupported(codec);
+    _encoderSupported = await recorderModule.isEncoderSupported(getCodecFromDeprecated(codec));
     _decoderSupported = await playerModule.isDecoderSupported(getCodecFromDeprecated(codec));
 
     setState(() {

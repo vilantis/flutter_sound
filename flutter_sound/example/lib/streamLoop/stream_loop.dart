@@ -84,7 +84,7 @@ class _StreamLoopState extends State<StreamLoop> {
 
   Future<void>? stopRecorder() {
     if (_mRecorder != null) {
-      return _mRecorder!.stopRecorder();
+      return _mRecorder!.stop();
     }
     return null;
   }
@@ -98,20 +98,18 @@ class _StreamLoopState extends State<StreamLoop> {
 
   Future<void> record() async {
     totoStream = StreamController<TauFood>();
-    await _mPlayer!.play( from: InputStream(totoStream.stream, codec: Pcm(AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: _sampleRatePlayer)));
-
-    await _mRecorder!.startRecorder(
-      codec: Codec.pcm16,
-      // !!!!!!!!!!!!!!!    TODO toStream: totoStream.sink, // ***** THIS IS THE LOOP !!! *****
-      sampleRate: _sampleRateRecorder,
-      numChannels: 1,
+    await _mPlayer!.play(
+      from: InputStream(totoStream.stream, codec: Pcm(AudioFormat.raw, depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: _sampleRatePlayer)),
+      to: DefaultOutputDevice(),
     );
+
+    await _mRecorder!.record(from: DefaultInputDevice(), to: OutputStream(totoStream.sink, codec: Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: _sampleRateRecorder, ), ) );
     setState(() {});
   }
 
   Future<void> stop() async {
     if (_mRecorder != null) {
-      await _mRecorder!.stopRecorder();
+      await _mRecorder!.stop();
     }
     if (_mPlayer != null) {
       await _mPlayer!.stop();

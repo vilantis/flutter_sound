@@ -322,7 +322,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   /// ```
   Future<Duration?> play({
     required InputNode from,
-    OutputDevice? to,
+    required OutputDevice to,
     TWhenFinished? whenFinished,
     TOnProgress? onProgress,
     Duration? interval,
@@ -937,6 +937,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
   Future<PlayerState> _startPlayerFromURI(
         InputFile fromURI,
+        OutputDevice to,
       ) async {
     String uri = fromURI.uri;
     TauCodec codec = fromURI.codec;
@@ -970,6 +971,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
   Future<PlayerState> _startPlayerFromBuffer(
       InputBuffer fromBuffer,
+      OutputDevice to,
       ) async {
     Uint8List buffer = fromBuffer.inputBuffer;
     TauCodec codec = fromBuffer.codec;
@@ -1037,7 +1039,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   ///
   ///   myPlayer._FoodSink.add(_FoodEvent((){_mPlayer.stopPlayer();}));
   ///   ```
-  Future<PlayerState> _startPlayerFromStream(InputStream stream,) async {
+  Future<PlayerState> _startPlayerFromStream(InputStream stream, OutputDevice to,) async {
             _logger.d('FS:---> startPlayerFromStream ');
 
             _foodStream = stream.stream;
@@ -1078,7 +1080,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   ///     ...
   ///     myPlayer.stopPlayer();
   /// ```
-  Future<PlayerState> _startPlayerFromMic(Mic mic) async {
+  Future<PlayerState> _startPlayerFromMic(Mic mic, OutputDevice to,) async {
     _logger.d('FS:---> startPlayerFromMic ');
     var state = await FlutterSoundPlayerPlatform.instance.startPlayerFromMic(
           this,
@@ -1095,7 +1097,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
   Future<Duration> _play({
     required InputNode from,
-    OutputDevice? to, // For future expansion
+    required OutputDevice to, // For future expansion
     TWhenFinished? whenFinished,
     TOnProgress? onProgress,
     Duration? interval,
@@ -1130,10 +1132,10 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       // but I wanted to keep the InputNode hierarchy independant of `tauPlayer`
       PlayerState state = PlayerState.isStopped;
       switch (from.runtimeType) {
-        case InputFile: state = await _startPlayerFromURI (from as InputFile); break;
-        case InputBuffer: state = await _startPlayerFromBuffer(from as InputBuffer); break;
-        case InputStream: state = await _startPlayerFromStream(from as InputStream); break;
-        case Mic: state = await _startPlayerFromMic(from as Mic); break;
+        case InputFile: state = await _startPlayerFromURI (from as InputFile, to); break;
+        case InputBuffer: state = await _startPlayerFromBuffer(from as InputBuffer, to); break;
+        case InputStream: state = await _startPlayerFromStream(from as InputStream, to); break;
+        case Mic: state = await _startPlayerFromMic(from as Mic, to); break;
         default: throw Exception('Invalid Input Node');
       }
       _playerState = state;

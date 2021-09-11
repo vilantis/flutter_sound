@@ -208,6 +208,10 @@ class TauHelper {
     required String outputFile,
     required Pcm codec,
   }) async {
+    if (codec.audioFormat != AudioFormat.raw || codec.sampleRate == null)
+    {
+      throw Exception('Codec must be raw PCM');
+    }
     var filIn = File(inputFile);
     var filOut = File(outputFile);
     var size = filIn.lengthSync();
@@ -215,10 +219,11 @@ class TauHelper {
         'pcmToWave() : input = $inputFile,  output = $outputFile,  size = $size');
     var sink = filOut.openWrite();
 
+
     var header = WaveHeader(
       WaveHeader.formatPCM,
       codec.nbrChannels(), //
-      codec.sampleRate,
+      codec.sampleRate!,
       16, // 16 bits per byte
       size, // total number of bytes
     );
@@ -237,11 +242,16 @@ class TauHelper {
     required Uint8List inputBuffer,
     required Pcm codec,
   }) async {
+    if (codec.audioFormat != AudioFormat.raw || codec.sampleRate == null)
+    {
+      throw Exception('Codec must be raw PCM');
+    }
+
     var size = inputBuffer.length;
     var header = WaveHeader(
       WaveHeader.formatPCM,
       codec.nbrChannels(),
-      codec.sampleRate,
+      codec.sampleRate!,
       16,
       size, // total number of bytes
     );

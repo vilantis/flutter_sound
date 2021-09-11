@@ -58,7 +58,7 @@ class SimpleRecorder extends StatefulWidget {
 }
 
 class _SimpleRecorderState extends State<SimpleRecorder> {
-  Codec _codec = Codec.aacMP4;
+  TauCodec _codec = Aac(AudioFormat.mp4);
   String _mPath = 'tau_file.mp4';
   TauPlayer? _mPlayer = TauPlayer();
   TauRecorder? _mRecorder = TauRecorder();
@@ -101,7 +101,7 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
     }
     await _mRecorder!.open();
     if (!await _mRecorder!.isEncoderSupported(_codec) && kIsWeb) {
-      _codec = Codec.opusWebM;
+      _codec = Opus(AudioFormat.webm);
       _mPath = 'tau_file.webm';
       if (!await _mRecorder!.isEncoderSupported(_codec) && kIsWeb) {
         _mRecorderIsInited = true;
@@ -115,18 +115,14 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
 
   void record() {
     _mRecorder!
-        .startRecorder(
-      toFile: _mPath,
-      codec: _codec,
-      audioSource: theSource,
-    )
+        .record(from: DefaultInputDevice(), to: OutputFile(_mPath, codec: _codec))
         .then((value) {
       setState(() {});
     });
   }
 
   void stopRecorder() async {
-    await _mRecorder!.stopRecorder().then((value) {
+    await _mRecorder!.stop().then((value) {
       setState(() {
         //var url = value;
         _mplaybackReady = true;
@@ -140,7 +136,8 @@ class _SimpleRecorderState extends State<SimpleRecorder> {
         _mRecorder!.isStopped &&
         _mPlayer!.isStopped);
     _mPlayer!.play( from: InputFile(_mPath),
-            whenFinished: () {
+        to: DefaultOutputDevice(),
+        whenFinished: () {
               setState(() {});
             })
         .then((value) {

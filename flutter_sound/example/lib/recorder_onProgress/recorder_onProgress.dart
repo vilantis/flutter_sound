@@ -45,7 +45,7 @@ class RecorderOnProgress extends StatefulWidget {
 
 class _RecorderOnProgressState extends State<RecorderOnProgress> {
   final TauRecorder _mRecorder = TauRecorder();
-  Codec _codec = Codec.aacMP4;
+  TauCodec _codec = Aac(AudioFormat.mp4);
   String _mPath = 'tau_file.mp4';
   bool _mRecorderIsInited = false;
   double _mSubscriptionDuration = 0;
@@ -90,7 +90,7 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
     }
     await _mRecorder.open();
     if (!await _mRecorder.isEncoderSupported(_codec) && kIsWeb) {
-      _codec = Codec.opusWebM;
+      _codec = Opus(AudioFormat.webm);
       _mPath = 'tau_file.webm';
       if (!await _mRecorder.isEncoderSupported(_codec) && kIsWeb) {
         _mRecorderIsInited = true;
@@ -100,16 +100,18 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
     _mRecorderIsInited = true;
   }
 
+  void _onProgressRecorder(Duration position, double decibels)
+  {
+    setState(() {
+      pos = position.inMilliseconds;
+        dbLevel = decibels as double;
+    });
+
+  }
+
+
   Future<void> init() async {
     await openTheRecorder();
-    _recorderSubscription = _mRecorder.onProgress!.listen((e) {
-      setState(() {
-        pos = e.duration.inMilliseconds;
-        if (e.decibels != null) {
-          dbLevel = e.decibels as double;
-        }
-      });
-    });
   }
 
   Future<Uint8List> getAssetData(String path) async {
@@ -120,23 +122,14 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
   // -------  Here is the code to playback  -----------------------
 
   void record(TauRecorder? recorder) async {
-    await recorder!.startRecorder(codec: _codec, toFile: _mPath);
+    await recorder!.record(from: DefaultInputDevice(), to: OutputFile(_mPath, codec: _codec));
     setState(() {});
   }
 
   Future<void> stopRecorder(TauRecorder recorder) async {
-    await recorder.stopRecorder();
+    await recorder.stop();
   }
 
-  Future<void> setSubscriptionDuration(
-      double d) async // v is between 0.0 and 2000 (milliseconds)
-  {
-    _mSubscriptionDuration = d;
-    setState(() {});
-    await _mRecorder.setSubscriptionDuration(
-      Duration(milliseconds: d.floor()),
-    );
-  }
 
   // --------------------- UI -------------------
 
@@ -191,7 +184,7 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
             value: _mSubscriptionDuration,
             min: 0.0,
             max: 2000.0,
-            onChanged: setSubscriptionDuration,
+            onChanged: (double d){_mSubscriptionDuration = d;},
             //divisions: 100
           ),
         ]),
