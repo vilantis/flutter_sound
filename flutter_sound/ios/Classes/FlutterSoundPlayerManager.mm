@@ -70,8 +70,27 @@ extern void FlutterSoundPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
         return flutterSoundPlayerManager;
 }
 
-
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result
+{
+        @try
+        {
+                [self dispatchMethodCall: call result: result];
+        } @catch (NSException *exception)
+        {
+                FlutterSoundPlayer* aFlautoPlayer = (FlutterSoundPlayer*)[ self getSession: call];
+                NSString* string1 = [NSString stringWithFormat:@"Exception in iOS side: %@ : %@", [exception description], [exception reason] ];
+                [aFlautoPlayer  log: DBG msg: string1];
+                result([FlutterError
+                        errorWithCode: [exception name]
+                        message:@"Open session failure"
+                        details:nil]);
+
+        } @finally
+        {
+        }
+}
+
+- (void)dispatchMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result
 {
         if ([@"resetPlugin" isEqualToString:call.method])
         {

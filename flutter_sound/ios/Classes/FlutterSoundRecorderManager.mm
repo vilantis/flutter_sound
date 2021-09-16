@@ -71,8 +71,28 @@ FlutterSoundRecorderManager* flutterSoundRecorderManager = nil; // Singleton
 
 
 
-
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result
+{
+        @try
+        {
+                [self dispatchMethodCall: call result: result];
+        } @catch (NSException *exception)
+        {
+                FlutterSoundRecorder* aFlautoRecorder = (FlutterSoundRecorder*)[ self getSession: call];
+                NSString* string1 = [NSString stringWithFormat:@"Exception in iOS side: %@ : %@", [exception description], [exception reason] ];
+                [aFlautoRecorder  log: DBG msg: string1];
+                result([FlutterError
+                        errorWithCode: [exception name]
+                        message:@"Open session failure"
+                        details:nil]);
+        } @finally
+        {
+        }
+}
+
+
+
+- (void)dispatchMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result
 {
         if ([@"resetPlugin" isEqualToString:call.method])
         {

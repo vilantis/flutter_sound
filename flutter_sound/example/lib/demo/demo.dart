@@ -340,14 +340,19 @@ class _MyAppState extends State<Demo> {
           from: DefaultInputDevice(),
           to: OutputStream(recordingDataController!.sink,
 
-          codec: Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: tSTREAMSAMPLERATE),
-        ));
+            codec: Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: tSTREAMSAMPLERATE),
+          ),
+          onProgress:    _onRecorderProgress,
+          interval: Duration(milliseconds: 100),
+        );
       } else {
         await recorderModule.record(
           from: DefaultInputDevice(),
           to: OutputFile(path,
           codec: getCodecFromDeprecated(_codec), //Pcm(AudioFormat.raw, nbChannels: NbChannels.mono, endianness: Endianness.littleEndian, depth: Depth.int16, sampleRate: (_codec == Codec.pcm16) ? tSTREAMSAMPLERATE : tSAMPLERATE,),
-          )
+          ),
+          onProgress:    _onRecorderProgress,
+          interval: Duration(milliseconds: 100),
         );
       }
       recorderModule.logger.d('startRecorder');
@@ -520,86 +525,100 @@ class _MyAppState extends State<Demo> {
       } else if (_media == Media.remoteExampleFile) {
         // We have to play an example audio file loaded via a URL
         audioFilePath = remoteSample[_codec.index];
-      }
 
-      // Check whether the user wants to use the audio player features
-      if (_isAudioPlayer) {
-        String? albumArtUrl;
-        String? albumArtAsset;
-        String? albumArtFile;
-        if (_media == Media.remoteExampleFile) {
-          albumArtUrl = albumArtPathRemote;
-        } else if (!kIsWeb) {
-          albumArtFile =
-              '${await playerModule.getResourcePath()}/assets/canardo.png';
-          playerModule.logger.d(albumArtFile);
-        } else {}
-
-        final track = Track(
-          trackPath: audioFilePath,
-          codec: _codec,
-          dataBuffer: dataBuffer,
-          trackTitle: 'This is a record',
-          trackAuthor: 'from flutter_sound',
-          albumArtUrl: albumArtUrl,
-          albumArtAsset: albumArtAsset,
-          albumArtFile: albumArtFile,
-        );
-        await playerModule.startPlayerFromTrack(track,
-            defaultPauseResume: false,
-            removeUIWhenStopped: true, whenFinished: () {
-          playerModule.logger.d('I hope you enjoyed listening to this song');
-          setState(() {});
-        }, onSkipBackward: () {
-          playerModule.logger.d('Skip backward');
-          stopPlayer();
-          startPlayer();
-        }, onSkipForward: () {
-          playerModule.logger.d('Skip forward');
-          stopPlayer();
-          startPlayer();
-        }, onPaused: (b) {
-          if (b) {
-            playerModule.pause();
-          } else {
-            playerModule.resume();
-          }
-        });
-      } else if (_media == Media.stream) {
+         } else if (_media == Media.stream) {
         totoController = StreamController<TauFood>();
         InputNode from = InputStream(totoController.stream, codec: Pcm( AudioFormat.raw,  depth: Depth.int16, endianness: Endianness.littleEndian, nbChannels: NbChannels.mono, sampleRate: tSTREAMSAMPLERATE,));
-        await playerModule.play(from: from, to: DefaultOutputDevice() );
+        await playerModule.play(
+            from: from,
+            to: DefaultOutputDevice(),
+          onProgress: _onProgress,
+          interval: Duration(milliseconds: 10),
+        );
         //_addListeners();
         setState(() {});
         await feedHim(audioFilePath!);
         //await finishPlayer();
         await stopPlayer();
         return;
-      } else {
+      }
+
+
+          String? albumArtUrl;
+          String? albumArtAsset;
+          String? albumArtFile;
+          if (_media == Media.remoteExampleFile) {
+            albumArtUrl = albumArtPathRemote;
+          } else if (!kIsWeb) {
+            albumArtFile =
+            '${await playerModule.getResourcePath()}/assets/canardo.png';
+            playerModule.logger.d(albumArtFile);
+          } else {}
+
+
+          TauTrack track = TauTrack(title: 'This is a record' ,author: 'from flutter_sound', albumArtFile: albumArtFile, albumArtAsset: albumArtAsset, albumArtURL:  albumArtUrl);
         if (audioFilePath != null) {
-          InputNode from = InputFile(audioFilePath, codec: getCodecFromDeprecated(codec), );
-          await playerModule.play(from: from,
+          InputNode from = InputFile(audioFilePath, codec: getCodecFromDeprecated(codec), track: track );
+          await playerModule.play(
+              from: from,
               to: DefaultOutputDevice(),
               onProgress: _onProgress,
               interval: Duration(milliseconds: 10),
               whenFinished: () {
                 playerModule.logger.d('Play finished');
-                setState(() {});}
+                setState(() {});},
+                removeUIWhenStopped: true,
+            onSkipBackward: () {
+              playerModule.logger.d('Skip backward');
+              stopPlayer();
+              startPlayer();
+            }, onSkipForward: () {
+            playerModule.logger.d('Skip forward');
+            stopPlayer();
+            startPlayer();
+          }, onPaused: (b) {
+            if (b) {
+              playerModule.pause();
+            } else {
+              playerModule.resume();
+            }
+          },
+          defaultPauseResume:  false,
 
-                );
+
+          );
         } else if (dataBuffer != null) {
           if (codec == Codec.pcm16) {
             dataBuffer = await tauHelper.pcmToWaveBuffer(inputBuffer: dataBuffer,codec: getCodecFromDeprecated(codec) as Pcm,);
             codec = Codec.pcm16WAV;
           }
           await playerModule.play(
-              from: InputBuffer(dataBuffer, codec: getCodecFromDeprecated(codec) ),
+              from: InputBuffer(dataBuffer, codec: getCodecFromDeprecated(codec), track: track, ),
               to: DefaultOutputDevice(),
+              onProgress: _onProgress,
+              interval: Duration(milliseconds: 10),
               whenFinished: () {
                 playerModule.logger.d('Play finished');
                 setState(() {});
-              });
-        }
+              } , onSkipBackward:
+                () {
+          playerModule.logger.d('Skip backward');
+          stopPlayer();
+          startPlayer();
+          }, onSkipForward: () {
+            playerModule.logger.d('Skip forward');
+            stopPlayer();
+            startPlayer();
+          }, onPaused: (b) {
+            if (b) {
+              playerModule.pause();
+            } else {
+              playerModule.resume();
+            }
+          },
+            defaultPauseResume:  false,
+          );
+
       }
       //_addListeners();
       setState(() {});
@@ -941,8 +960,8 @@ class _MyAppState extends State<Demo> {
           _isRecording
               ? LinearProgressIndicator(
                   value: 100.0 / 160.0 * (_dbLevel ?? 1) / 100,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                  backgroundColor: Colors.red)
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                  backgroundColor: Colors.white10)
               : Container(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

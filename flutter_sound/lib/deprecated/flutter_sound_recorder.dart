@@ -102,7 +102,7 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
   Completer<FlutterSoundRecorder>? _openRecorderCompleter;
 
   final _lock = Lock();
-  static bool _reStarted = true;
+  //static bool _reStarted = true;
 
   Initialized _isInited = Initialized.notInitialized;
   bool _isOggOpus =
@@ -440,6 +440,9 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
       int audioFlags = outputToSpeaker,
       AudioDevice device = AudioDevice.speaker}) async {
     _logger.d('---> openAudioSession');
+    if (_isInited == Initialized.fullyInitialized) {
+      throw Exception('Recorder is already open');
+    }
 
     Completer<FlutterSoundRecorder>? completer;
 
@@ -452,12 +455,12 @@ class FlutterSoundRecorder implements FlutterSoundRecorderCallback {
     _openRecorderCompleter = Completer<FlutterSoundRecorder>();
     completer = _openRecorderCompleter;
     try {
-      if (_reStarted) {
+      //if (_reStarted) {
         // Perhaps a Hot Restart ?  We must reset the plugin
-        _logger.d('Resetting flutter_sound Recorder Plugin');
-        _reStarted = false;
-        await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
-      }
+        //_logger.d('Resetting flutter_sound Recorder Plugin');
+        //_reStarted = false;
+        //await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
+      //}
 
       FlutterSoundRecorderPlatform.instance.openSession(this);
       await FlutterSoundRecorderPlatform.instance.openRecorder(

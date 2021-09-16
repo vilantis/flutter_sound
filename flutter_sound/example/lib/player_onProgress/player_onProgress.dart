@@ -46,9 +46,7 @@ class PlayerOnProgress extends StatefulWidget {
 class _PlayerOnProgressState extends State<PlayerOnProgress> {
   final TauPlayer _mPlayer = TauPlayer();
   bool _mPlayerIsInited = false;
-  //double _mSubscriptionDuration = 0;
   Uint8List _boumData = Uint8List(0);
-  StreamSubscription? _mPlayerSubscription;
   int pos = 0;
   double _interval = 0.0;
 
@@ -65,29 +63,15 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
   @override
   void dispose() {
     stopPlayer(_mPlayer);
-    cancelPlayerSubscriptions();
-
-    // Be careful : you must `close` the audio session when you have finished with it.
+     // Be careful : you must `close` the audio session when you have finished with it.
     _mPlayer.close();
 
     super.dispose();
   }
 
-  void cancelPlayerSubscriptions() {
-    if (_mPlayerSubscription != null) {
-      _mPlayerSubscription!.cancel();
-      _mPlayerSubscription = null;
-    }
-  }
-
   Future<void> init() async {
     await _mPlayer.open();
     _boumData = await getAssetData(_boum);
-    //_mPlayerSubscription = _mPlayer.onProgress!.listen((e) {
-      //setState(() {
-        //pos = e.position.inMilliseconds;
-      //});
-    //});
   }
 
   Future<Uint8List> getAssetData(String path) async {
@@ -172,7 +156,12 @@ class _PlayerOnProgressState extends State<PlayerOnProgress> {
             value: _interval,
             min: 0.0,
             max: 2000.0,
-            onChanged: (double d) { _interval = d;},
+            onChanged: (double d) {
+              _interval = d;
+              setState(() {
+
+              });
+              },
             //divisions: 100
           ),
         ]),

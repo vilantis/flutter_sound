@@ -184,7 +184,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     AudioFocus? focus,
     SessionCategory category = SessionCategory.playAndRecord,
     SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
+    //AudioDevice device = AudioDevice.speaker,
     int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
     bool withShadeUI = false,
   }) async {
@@ -197,7 +197,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
         focus: focus,
         category: category,
         mode: mode,
-        device: device,
+        //device: device,
         audioFlags: audioFlags,
         withShadeUI: withShadeUI,
       );
@@ -252,7 +252,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
     SessionCategory category = SessionCategory.playback,
     SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
+    //AudioDevice device = AudioDevice.speaker,
     int audioFlags =
     outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
   }) async {
@@ -261,7 +261,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
         focus: focus,
         category: category,
         mode: mode,
-        device: device,
+        //device: device,
         audioFlags: audioFlags,
       );
     });
@@ -326,91 +326,22 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     TWhenFinished? whenFinished,
     TOnProgress? onProgress,
     Duration? interval,
-  }) async {
+
+  //Parameters for _play from track
+    TonSkip? onSkipForward,
+    TonSkip? onSkipBackward,
+    TonPaused? onPaused,
+    bool defaultPauseResume = true,
+    bool removeUIWhenStopped = true,
+
+}) async {
     Duration? r;
     await _lock.synchronized(() async {
-      r = await _play(from: from, to: to, whenFinished: whenFinished, onProgress: onProgress, interval: interval);
+      r = await _play(from: from, to: to, whenFinished: whenFinished, onProgress: onProgress, interval: interval,
+          onSkipForward: onSkipForward,defaultPauseResume: defaultPauseResume, onPaused: onPaused, onSkipBackward: onSkipBackward, removeUIWhenStopped: removeUIWhenStopped,);
     });
     return r;
   }
-
-
-  /// Play data from a track specification and display controls on the lock screen or an Apple Watch.
-  ///
-  /// The Audio Session must have been open with the parameter `withUI`.
-  ///
-  /// - `track` parameter is a simple structure which describe the sound to play.
-  ///
-  ///   - `whenFinished:()` : A function for specifying what to do when the playback will be finished.
-  ///
-  ///  - `onPaused:()` : this parameter can be :
-  ///  - a call back function to call when the user hit the Skip Pause button on the lock screen
-  ///  - `null` : The pause button will be handled by Flutter Sound internal
-  ///
-  ///   - `onSkipForward:()` : this parameter can be :
-  ///   - a call back function to call when the user hit the Skip Forward button on the lock screen
-  ///   - `null` : The Skip Forward button will be disabled
-  ///
-  ///  - `onSkipBackward:()` : this parameter can be :
-  ///   - a call back function to call when the user hit the Skip Backward button on the lock screen
-  ///   - <null> : The Skip Backward button will be disabled
-  ///
-  ///   - `removeUIWhenStopped` : is a boolean to specify if the UI on the lock screen must be removed when the sound is finished or when the App does a `stopPlayer()`.
-  ///   Most of the time this parameter must be true. It is used only for the rare cases where the App wants to control the lock screen between two playbacks.
-  ///   Be aware that if the UI is not removed, the button Pause/Resume, Skip Backward and Skip Forward remain active between two playbacks.
-  ///   If you want to disable those button, use the API verb ```nowPlaying()```.
-  ///   Remark: actually this parameter is implemented only on iOS.
-  ///
-  ///   - `defaultPauseResume` : is a boolean value to specify if Flutter Sound must pause/resume the playback by itself when the user hit the pause/resume button. Set this parameter to *FALSE* if the App wants to manage itself the pause/resume button. If you do not specify this parameter and the `onPaused` parameter is specified then Flutter Sound will assume `FALSE`. If you do not specify this parameter and the `onPaused` parameter is not specified then Flutter Sound will assume `TRUE`.
-  ///   Remark: actually this parameter is implemented only on iOS.
-  ///
-  ///
-  ///  `startPlayerFromTrack()` returns a Duration Future, which is the record duration.
-  ///
-  ///
-  ///   *Example:*
-  ///   ```dart
-  ///   final fileUri = "https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3";
-  ///   Track track = Track( codec: Codec.opusOGG, trackPath: fileUri, trackAuthor: '3 Inches of Blood', trackTitle: 'Axes of Evil', albumArtAsset: albumArt )
-  ///   Duration d = await myPlayer.startPlayerFromTrack
-  ///   (
-  ///   track,
-  ///   whenFinished: ()
-  ///   {
-  ///     logger.d( 'I hope you enjoyed listening to this song' );
-  ///   },
-  ///   );
-  ///   ```
-  ///   @deprecated
-  Future<Duration?> startPlayerFromTrack(
-      Track track, {
-        TonSkip? onSkipForward,
-        TonSkip? onSkipBackward,
-        TonPaused? onPaused,
-        TWhenFinished? whenFinished,
-        Duration? progress,
-        Duration? duration,
-        bool? defaultPauseResume,
-        bool removeUIWhenStopped = true,
-      }) async {
-    var r = Duration.zero;
-    await _lock.synchronized(() async {
-      r = await _startPlayerFromTrack(
-        track,
-        onSkipForward: onSkipForward,
-        onSkipBackward: onSkipBackward,
-        onPaused: onPaused,
-        whenFinished: whenFinished,
-        progress: progress,
-        duration: duration,
-        defaultPauseResume: defaultPauseResume,
-        removeUIWhenStopped: removeUIWhenStopped,
-      );
-    });
-    return r;
-  }
-
-
 
 
 
@@ -707,12 +638,12 @@ class TauPlayer implements FlutterSoundPlayerCallback {
 
   /// The default blocksize used when playing from Stream.
   static const _blockSize = 4096;
-
+  bool withShadeUI = false;
 
   TonSkip? _onSkipForward; // User callback "onPaused:"
   TonSkip? _onSkipBackward; // User callback "onPaused:"
   TonPaused? _onPaused; // user callback "whenPause:"
-  static bool _reStarted = true;
+  //static bool _reStarted = true;
 
   ///
   StreamSubscription<TauFood>?
@@ -809,7 +740,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     AudioFocus? focus ,
     SessionCategory category = SessionCategory.playAndRecord,
     SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
+    //AudioDevice device = AudioDevice.speaker,
     int audioFlags = outputToSpeaker | allowBlueToothA2DP | allowAirPlay,
     bool withShadeUI = false,
   }) async {
@@ -824,14 +755,14 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       throw Exception('Player is already open');
     }
 
-    if (_reStarted) {
+    //if (_reStarted) {
       // Perhaps a Hot Restart ?  We must reset the plugin
-      _logger.d('Resetting Tau Player Plugin');
-      _reStarted = false;
-      await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
-    }
+      //_logger.d('Resetting Tau Player Plugin');
+      //_reStarted = false;
+      //await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
+    //}
 
-    focus ??= _hasFocus ? AudioFocus.requestFocusAndStopOthers : AudioFocus.doNotRequestFocus;
+    focus ??= _hasFocus ?  AudioFocus.doNotRequestFocus : AudioFocus.requestFocusAndStopOthers;
     FlutterSoundPlayerPlatform.instance.openSession(this);
     //_setPlayerCallback();
     _onProgress = null;
@@ -844,7 +775,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
           focus: focus,
           audioFlags: audioFlags,
           category: category,
-          device: device,
+          device: AudioDevice.obsolete,
           mode: mode,
           withUI: withShadeUI);
       if (focus != AudioFocus.doNotRequestFocus) {
@@ -852,6 +783,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       }
 
       _playerState = PlayerState.values[state];
+      this.withShadeUI = withShadeUI;
 
     } on Exception {
       _openPlayerCompleter = null;
@@ -910,7 +842,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     AudioFocus focus = AudioFocus.requestFocusAndKeepOthers,
     SessionCategory category = SessionCategory.playback,
     SessionMode mode = SessionMode.modeDefault,
-    AudioDevice device = AudioDevice.speaker,
+    //AudioDevice device = AudioDevice.obsolete,
     int audioFlags =
     outputToSpeaker | allowBlueTooth | allowBlueToothA2DP | allowEarPiece,
   }) async {
@@ -928,7 +860,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       category: category,
       mode: mode,
       audioFlags: audioFlags,
-      device: device,
+      device: AudioDevice.obsolete,
     );
     _playerState = PlayerState.values[state];
     _logger.d('FS:<--- setAudioFocus ');
@@ -938,6 +870,15 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   Future<PlayerState> _startPlayerFromURI(
         InputFile fromURI,
         OutputDevice to,
+      {
+        //Parameters for _play from track
+        TonSkip? onSkipForward,
+        TonSkip? onSkipBackward,
+        TonPaused? onPaused,
+        bool defaultPauseResume = true,
+        bool removeUIWhenStopped = true,
+      }
+
       ) async {
     String uri = fromURI.uri;
     TauCodec codec = fromURI.codec;
@@ -958,12 +899,31 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     oldCodec = what['codec'] as Codec;
     uri = what['path'] as String;
 
-    var state = await FlutterSoundPlayerPlatform.instance.startPlayer(
-      this,
-      codec: oldCodec,
-      fromURI: uri,
-      fromDataBuffer: null,
-    );
+    int state = PlayerState.isStopped.index;
+    if (withShadeUI) {
+      Track track = Track(codec: oldCodec, trackPath:uri, trackAuthor: fromURI.track.author,
+      trackTitle: fromURI.track.title, albumArtFile: fromURI.track.albumArtFile, albumArtAsset: fromURI.track.albumArtAsset, albumArtUrl: fromURI.track.albumArtURL);
+
+      state = await FlutterSoundPlayerPlatform.instance.startPlayerFromTrack(
+        this,
+        progress: Duration.zero,
+        duration: Duration.zero,
+        track: track.toMap(),
+        canPause: (onPaused != null || defaultPauseResume),
+        canSkipForward: (onSkipForward != null),
+        canSkipBackward: (onSkipBackward != null),
+        defaultPauseResume: defaultPauseResume,
+        removeUIWhenStopped: removeUIWhenStopped,
+      );
+
+    } else {
+      state = await FlutterSoundPlayerPlatform.instance.startPlayer(
+        this,
+        codec: oldCodec,
+        fromURI: uri,
+        fromDataBuffer: null,
+      );
+    }
 
   return PlayerState.values[state];
   }
@@ -972,7 +932,16 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   Future<PlayerState> _startPlayerFromBuffer(
       InputBuffer fromBuffer,
       OutputDevice to,
-      ) async {
+  {
+      //Parameters for _play from track
+      TonSkip? onSkipForward,
+      TonSkip? onSkipBackward,
+      TonPaused? onPaused,
+      bool defaultPauseResume = true,
+      bool removeUIWhenStopped = true,
+  }
+
+  ) async {
     Uint8List buffer = fromBuffer.inputBuffer;
     TauCodec codec = fromBuffer.codec;
     if (codec is Pcm &&  (codec as Pcm).audioFormat == AudioFormat.raw ) {
@@ -990,13 +959,31 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     await _convert(oldCodec, what);
     oldCodec = what['codec'] as Codec;
     buffer = what['fromDataBuffer'] as Uint8List;
+    int state = PlayerState.isStopped.index;
+    if (withShadeUI) {
+      Track track = Track(codec: oldCodec, dataBuffer: buffer, trackAuthor: fromBuffer.track.author,
+          trackTitle: fromBuffer.track.title, albumArtFile: fromBuffer.track.albumArtFile, albumArtAsset: fromBuffer.track.albumArtAsset, albumArtUrl: fromBuffer.track.albumArtURL);
 
-    var state = await FlutterSoundPlayerPlatform.instance.startPlayer(
-      this,
-      codec: oldCodec,
-      fromDataBuffer: buffer,
-      fromURI: null,
-    );
+      state = await FlutterSoundPlayerPlatform.instance.startPlayerFromTrack(
+        this,
+        progress: Duration.zero,
+        duration: Duration.zero,
+        track: track.toMap(),
+        canPause: (onPaused != null || defaultPauseResume),
+        canSkipForward: (onSkipForward != null),
+        canSkipBackward: (onSkipBackward != null),
+        defaultPauseResume: defaultPauseResume,
+        removeUIWhenStopped: removeUIWhenStopped,
+      );
+
+    } else {
+      state = await FlutterSoundPlayerPlatform.instance.startPlayer(
+        this,
+        codec: oldCodec,
+        fromDataBuffer: buffer,
+        fromURI: null,
+      );
+    }
 
     return PlayerState.values[state];
 
@@ -1101,6 +1088,14 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     TWhenFinished? whenFinished,
     TOnProgress? onProgress,
     Duration? interval,
+
+    //Parameters for _play from track
+    TonSkip? onSkipForward,
+    TonSkip? onSkipBackward,
+    TonPaused? onPaused,
+    bool defaultPauseResume = true,
+    bool removeUIWhenStopped = true,
+
   }) async {
     _logger.d('FS:---> startPlayer ');
     await _waitOpen();
@@ -1131,10 +1126,16 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       // We could have used a virtual function in InputNode,
       // but I wanted to keep the InputNode hierarchy independant of `tauPlayer`
       PlayerState state = PlayerState.isStopped;
+      _onProgress = onProgress;
+      if (_onProgress != null) {
+        var state = await FlutterSoundPlayerPlatform.instance
+            .setSubscriptionDuration(this, duration: interval);
+        _playerState = PlayerState.values[state];
+      }
       switch (from.runtimeType) {
-        case InputFile: state = await _startPlayerFromURI (from as InputFile, to); break;
-        case InputBuffer: state = await _startPlayerFromBuffer(from as InputBuffer, to); break;
-        case InputStream: state = await _startPlayerFromStream(from as InputStream, to); break;
+        case InputFile: state = await _startPlayerFromURI (from as InputFile, to, onSkipForward: onSkipForward,defaultPauseResume: defaultPauseResume, onPaused: onPaused, onSkipBackward: onSkipBackward, removeUIWhenStopped: removeUIWhenStopped,); break;
+        case InputBuffer: state = await _startPlayerFromBuffer(from as InputBuffer, to, onSkipForward: onSkipForward,defaultPauseResume: defaultPauseResume, onPaused: onPaused, onSkipBackward: onSkipBackward, removeUIWhenStopped: removeUIWhenStopped,); break;
+        case InputStream: state = await _startPlayerFromStream(from as InputStream, to, ); break;
         case Mic: state = await _startPlayerFromMic(from as Mic, to); break;
         default: throw Exception('Invalid Input Node');
       }
@@ -1142,12 +1143,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
     } on Exception {
       _startPlayerCompleter = null;
       rethrow;
-    }
-    _onProgress = onProgress;
-    if (_onProgress != null) {
-    var state = await FlutterSoundPlayerPlatform.instance
-        .setSubscriptionDuration(this, duration: interval);
-    _playerState = PlayerState.values[state];
     }
 
 
@@ -1229,94 +1224,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
   }
 
 
-
-  @deprecated
-  Future<Duration> _startPlayerFromTrack(
-      Track track, {
-        TOnProgress? onProgress,
-        Duration? interval,
-        TonSkip? onSkipForward,
-        TonSkip? onSkipBackward,
-        TonPaused? onPaused,
-        TWhenFinished? whenFinished,
-        Duration? progress,
-        Duration? duration,
-        bool? defaultPauseResume,
-        bool removeUIWhenStopped = true,
-      }) async {
-    _logger.d('FS:---> startPlayerFromTrack ');
-    await _waitOpen();
-    if (!_isInited ) {
-      throw Exception('Player is not open');
-    }
-    Completer<Duration>? completer;
-    //Map retMap;
-    try {
-      await _stop(); // Just in case
-      if ((onProgress != null && interval == null) || (onProgress == null && interval != null))
-      {
-        throw(Exception('You must specify both the `onProgress` and the `interval` parameters'));
-      }
-
-      _audioPlayerFinishedPlaying = whenFinished;
-      _onSkipForward = onSkipForward;
-      _onSkipBackward = onSkipBackward;
-      _onPaused = onPaused;
-      var trackDico = track.toMap();
-      var what = <String, dynamic>{
-        'codec': track.codec,
-        'path': track.trackPath,
-        'fromDataBuffer': track.dataBuffer,
-      };
-      var codec = what['codec'] as Codec;
-      await _convert(codec, what);
-      trackDico['bufferCodecIndex'] = codec.index;
-      trackDico['path'] = what['path'];
-      trackDico['dataBuffer'] = what['fromDataBuffer'];
-      trackDico['codec'] = codec.index;
-
-      defaultPauseResume ??= (onPaused == null);
-      if (_playerState != PlayerState.isStopped) {
-        throw Exception('Player is not stopped');
-      }
-
-      if (_startPlayerCompleter != null) {
-        _logger.w('Killing another startPlayer()');
-        _startPlayerCompleter!.completeError('Killed by another startPlayer()');
-      }
-      _startPlayerCompleter = Completer<Duration>();
-      completer = _startPlayerCompleter;
-
-      var state =
-      await FlutterSoundPlayerPlatform.instance.startPlayerFromTrack(
-        this,
-        progress: progress,
-        duration: duration,
-        track: trackDico,
-        canPause: (onPaused != null || defaultPauseResume),
-        canSkipForward: (onSkipForward != null),
-        canSkipBackward: (onSkipBackward != null),
-        defaultPauseResume: defaultPauseResume,
-        removeUIWhenStopped: removeUIWhenStopped,
-      );
-      _playerState = PlayerState.values[state];
-    } on Exception {
-      _startPlayerCompleter = null;
-      rethrow;
-    }
-    //Duration d = Duration(milliseconds: retMap['duration'] as int);
-    //int state = retMap['state'] as int;
-    //playerState = PlayerState.values[state];
-    _onProgress = onProgress;
-    if (_onProgress != null) {
-      var state = await FlutterSoundPlayerPlatform.instance
-          .setSubscriptionDuration(this, duration: interval);
-      _playerState = PlayerState.values[state];
-    }
-
-    _logger.d('FS:<--- startPlayerFromTrack ');
-    return completer!.future;
-  }
 
 
   Future<void> _stopPlayer() async {

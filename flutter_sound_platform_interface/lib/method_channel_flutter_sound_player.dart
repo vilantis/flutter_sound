@@ -277,7 +277,8 @@ class MethodChannelFlutterSoundPlayer extends FlutterSoundPlayerPlatform
   @override
   Future<int> startPlayerFromTrack(FlutterSoundPlayerCallback callback, {Duration? progress, Duration? duration, Map<String, dynamic>? track, bool? canPause, bool? canSkipForward, bool? canSkipBackward, bool? defaultPauseResume, bool? removeUIWhenStopped })
   {
-    return invokeMethod( callback, 'startPlayerFromTrack', {'progress': progress, 'duration': duration, 'track': track, 'canPause': canPause, 'canSkipForward': canSkipForward, 'canSkipBackward': canSkipBackward,
+    return invokeMethod( callback, 'startPlayerFromTrack', {'progress': (progress != null) ? progress.inMilliseconds : 0, 'duration': (duration != null) ? duration.inMilliseconds : 0,
+            'track': track, 'canPause': canPause, 'canSkipForward': canSkipForward, 'canSkipBackward': canSkipBackward,
            'defaultPauseResume': defaultPauseResume, 'removeUIWhenStopped': removeUIWhenStopped,},);
   }
 

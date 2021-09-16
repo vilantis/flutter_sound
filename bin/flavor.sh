@@ -80,16 +80,16 @@ FULL)
 
                 for f in $(find . -name '*.dart' ); do process_dart_file $f FULL $f; done
 
-		mv "android/src/main/ffmpeg.park" "android/src/main/java/com/dooboolab/ffmpeg" 2>/dev/null
+		#mv "android/src/main/ffmpeg.park" "android/src/main/java/com/dooboolab/ffmpeg" 2>/dev/null
 
 		gsed -i  "/ext.flutterFFmpegPackage *= *'audio'$/d"   android/build.gradle
 		#gsed -i  "/implementation *'com.arthenica:mobile-ffmpeg-/d"   android/build.gradle
 		gsed -i "1iext.flutterFFmpegPackage = 'audio'" android/build.gradle
-  	        gsed -i "s/^[ \t]*\/\/implementation 'com.arthenica:mobile-ffmpeg-/    implementation 'com.arthenica:mobile-ffmpeg-/" android/build.gradle
+  	        #gsed -i "s/^[ \t]*\/\/implementation 'com.arthenica:mobile-ffmpeg-/    implementation 'com.arthenica:mobile-ffmpeg-/" android/build.gradle
 
 
-  	        gsed -i  "/import *com.dooboolab.ffmpeg.FlutterSoundFFmpeg;$/d"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
-		gsed -i  "1aimport com.dooboolab.ffmpeg.FlutterSoundFFmpeg;"     android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
+  	        #gsed -i  "/import *com.dooboolab.ffmpeg.FlutterSoundFFmpeg;$/d"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
+		#gsed -i  "1aimport com.dooboolab.ffmpeg.FlutterSoundFFmpeg;"     android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
 
  		gsed -i  "s/^[ $'\t']*public static *final *boolean *FULL_FLAVOR *= *false;$/    public static final boolean FULL_FLAVOR = true;/"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
 		gsed -i  "s/^[ $'\t']*if *( *FULL_FLAVOR *) *;\/\/\ *{/        if (FULL_FLAVOR) \{/"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
@@ -130,15 +130,15 @@ LITE)
                 for f in $(find . -name '*.dart' ); do process_dart_file $f LITE $f; done
 
 
-		mv "android/src/main/java/com/dooboolab/ffmpeg" "android/src/main/ffmpeg.park" 2>/dev/null
+		#mv "android/src/main/java/com/dooboolab/ffmpeg" "android/src/main/ffmpeg.park" 2>/dev/null
 
 		gsed -i  "/ext.flutterFFmpegPackage *= *'audio'$/d"   android/build.gradle
 		gsed -i "1i//ext.flutterFFmpegPackage = 'audio'" android/build.gradle
- 		gsed -i "s/^[ \t]*implementation 'com.arthenica:mobile-ffmpeg-/    \/\/implementation 'com.arthenica:mobile-ffmpeg-/" android/build.gradle
+ 		#gsed -i "s/^[ \t]*implementation 'com.arthenica:mobile-ffmpeg-/    \/\/implementation 'com.arthenica:mobile-ffmpeg-/" android/build.gradle
 
 
-                gsed -i  "/import *com.dooboolab.ffmpeg.FlutterSoundFFmpeg;$/d"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
-		gsed -i "1a//import com.dooboolab.ffmpeg.FlutterSoundFFmpeg;"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
+                #gsed -i  "/import *com.dooboolab.ffmpeg.FlutterSoundFFmpeg;$/d"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
+		#gsed -i "1a//import com.dooboolab.ffmpeg.FlutterSoundFFmpeg;"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
 
 		gsed -i  "s/^[ $'\t']*public static *final *boolean *FULL_FLAVOR *= *true;$/    public static final boolean FULL_FLAVOR = false;/"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java
 		gsed -i  "s/^[ $'\t']*if *( *FULL_FLAVOR *) *{/        if (FULL_FLAVOR) ;\/\/\{/"  android/src/main/java/com/dooboolab/fluttersound/FlutterSound.java

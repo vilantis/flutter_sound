@@ -102,6 +102,7 @@ class _SeekState extends State<Seek> {
         setPos(position.inMilliseconds);
         setState(() {});
         },
+        interval: Duration(milliseconds: 100),
         whenFinished: () {
           setState(() {});
         });

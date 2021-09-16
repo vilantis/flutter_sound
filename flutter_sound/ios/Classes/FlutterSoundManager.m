@@ -45,8 +45,14 @@
 - (int) initPlugin: (Session*) session call:(FlutterMethodCall*)call
 {
         int slotNo = [call.arguments[@"slotNo"] intValue];
-        assert ( (slotNo >= 0) && (slotNo < [flautoPlayerSlots count]));
-        assert (flautoPlayerSlots[slotNo] ==  [NSNull null] );
+        if (slotNo < 0 || slotNo > [flautoPlayerSlots count])
+                @throw [NSException exceptionWithName: @"BadSlotNo" reason: @"Slot number not found" userInfo: nil];
+        
+        if (flautoPlayerSlots[slotNo] !=  [NSNull null])
+                @throw [NSException exceptionWithName: @"BadSlotNo" reason: @"Slot number already in used" userInfo: nil];
+
+        //assert ( (slotNo >= 0) && (slotNo < [flautoPlayerSlots count]));
+        //assert (flautoPlayerSlots[slotNo] ==  [NSNull null] );
         flautoPlayerSlots[slotNo] = session;
         return slotNo;
 }
@@ -61,7 +67,9 @@
 {
 
         int slotNo = [call.arguments[@"slotNo"] intValue];
-        assert ( (slotNo >= 0) && (slotNo <= [flautoPlayerSlots count]));
+        // assert ( (slotNo >= 0) && (slotNo <= [flautoPlayerSlots count]));
+        if (slotNo < 0 || slotNo > [flautoPlayerSlots count])
+                @throw [NSException exceptionWithName: @"BadSlotNo" reason: @"Slot number not found" userInfo: nil];
         
         if (slotNo == [flautoPlayerSlots count])
         {

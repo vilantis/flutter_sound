@@ -162,7 +162,7 @@
         t_SESSION_MODE mode = (t_SESSION_MODE)( [(NSNumber*)call.arguments[@"mode"] intValue]);
         int flags =  [(NSNumber*)call.arguments[@"audioFlags"] intValue];
         t_AUDIO_DEVICE device = (t_AUDIO_DEVICE)( [(NSNumber*)call.arguments[@"device"] intValue]);
-        BOOL r = [flautoPlayer initializeFlautoPlayerFocus: focus category: category mode: mode audioFlags: flags audioDevice:device];
+        BOOL r = [flautoPlayer initializeFlautoPlayerFocus: focus category: category mode: mode audioFlags: flags audioDevice: device];
         if (r)
                 result( [self getPlayerStatus]);
         else

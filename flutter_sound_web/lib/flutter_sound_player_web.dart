@@ -299,7 +299,7 @@ class FlutterSoundPlayerWeb extends FlutterSoundPlayerPlatform //implements Flut
         }
 
         @override
-        Future<int> startPlayerFromTrack(FlutterSoundPlayerCallback callback, {Duration? progress, Duration? duration, Map<String, dynamic>? track, bool? canPause, bool? canSkipForward, bool? canSkipBackward, bool? defaultPauseResume, bool? removeUIWhenStopped }) async
+        Future<int> startPlayerFromTrack(FlutterSoundPlayerCallback callback, { Map<String, dynamic>? track, bool? canPause, bool? canSkipForward, bool? canSkipBackward, bool? defaultPauseResume, bool? removeUIWhenStopped }) async
         {
                 // startPlayerCompleter = new Completer<Map>();
                 // await invokeMethod( callback, 'startPlayerFromTrack', {'progress': progress, 'duration': duration, 'track': track, 'canPause': canPause, 'canSkipForward': canSkipForward, 'canSkipBackward': canSkipBackward,
@@ -311,7 +311,7 @@ class FlutterSoundPlayerWeb extends FlutterSoundPlayerPlatform //implements Flut
           }
 
         @override
-        Future<int> nowPlaying(FlutterSoundPlayerCallback callback,  {Duration? progress, Duration? duration, Map<String, dynamic>? track, bool? canPause, bool? canSkipForward, bool? canSkipBackward, bool? defaultPauseResume, }) async
+        Future<int> nowPlaying(FlutterSoundPlayerCallback callback,  { Map<String, dynamic>? track, bool? canPause, bool? canSkipForward, bool? canSkipBackward, bool? defaultPauseResume, }) async
         {
                 return getWebSession(callback)!.nowPlaying(progress!.inMilliseconds, duration!.inMilliseconds, track, canPause, canSkipForward, canSkipBackward, defaultPauseResume);
         }

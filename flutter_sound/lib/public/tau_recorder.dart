@@ -289,12 +289,12 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     Duration? interval,
 
   }) async {
-    _logger.d('FS:---> startRecorder ');
+    _logger.d('FS:---> record ');
     await _lock.synchronized(() async {
       await _startRecorder(from: from, to: to, onProgress: onProgress, interval: interval
        );
     });
-    _logger.d('FS:<--- startRecorder ');
+    _logger.d('FS:<--- record ');
   }
 
 
@@ -412,7 +412,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   Level _logLevel = Level.debug;
 
   final _lock = Lock();
-  static bool _reStarted = true;
+  //static bool _reStarted = true;
 
   bool _isInited = false;
   bool _isOggOpus =
@@ -459,12 +459,12 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     _openRecorderCompleter = Completer<TauRecorder>();
     completer = _openRecorderCompleter;
     try {
-      if (_reStarted) {
+      //if (_reStarted) {
         // Perhaps a Hot Restart ?  We must reset the plugin
-        _logger.d('Resetting flutter_sound Recorder Plugin');
-        _reStarted = false;
-        await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
-      }
+        //_logger.d('Resetting flutter_sound Recorder Plugin');
+       // _reStarted = false;
+       // await FlutterSoundRecorderPlatform.instance.resetPlugin(this);
+      //}
 
       FlutterSoundRecorderPlatform.instance.openSession(this);
       await FlutterSoundRecorderPlatform.instance.openRecorder(
@@ -474,7 +474,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
         category: SessionCategory.playAndRecord,
         mode: SessionMode.modeDefault,
         audioFlags: 0,
-        device: AudioDevice.blueToothA2DP,
+        device: AudioDevice.obsolete,
       );
 
     } on Exception {
@@ -550,9 +550,9 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     }
 
      if ((!kIsWeb) &&
-        (Platform.isIOS) &&
-         ((codec == Codec.opusOGG ||
-             _fileExtension(path )== '.opus'))) {
+        (Platform.isIOS)) { 
+         if ( (codec is Opus && codec.audioFormat == AudioFormat.ogg  ) ||
+             _fileExtension(path )== '.opus') {
       _savedUri = path;
       _isOggOpus = true;
       codec = Opus(AudioFormat.caf);
@@ -560,13 +560,28 @@ class TauRecorder implements FlutterSoundRecorderCallback {
       var fout = File('${tempDir.path}/flutter_sound-tmp.caf');
       path = fout.path;
       _tmpUri = path;
-    }
-      await FlutterSoundRecorderPlatform.instance.startRecorder(this,
-      path: path,
-      codec: codec.deprecatedCodec,
-      toStream: false,
-      audioSource: from.deprecatedAudioSource,
-    );
+      }
+     }
+
+     if (codec is Pcm) {
+       var c = codec as Pcm;
+       await FlutterSoundRecorderPlatform.instance.startRecorder(this,
+         path: path,
+         codec: codec.deprecatedCodec,
+         toStream: false,
+         audioSource: from.deprecatedAudioSource,
+         sampleRate: c.sampleRate,
+         numChannels:  c.nbrChannels(),
+       );
+
+     } else {
+          await FlutterSoundRecorderPlatform.instance.startRecorder(this,
+          path: path,
+          codec: codec.deprecatedCodec,
+          toStream: false,
+          audioSource: from.deprecatedAudioSource,
+        );
+     }
 
   }
 
@@ -578,12 +593,18 @@ class TauRecorder implements FlutterSoundRecorderCallback {
   Future<void> _startRecorderToStream(InputDevice from, OutputStream outputStream) async
   {
     _userStreamSink = outputStream.stream ;
-
+    Pcm? c = outputStream.getPcmCodec();
+    if (c == null) {
+      throw Exception('Output PCM is undefined');
+    }
+    Pcm codec = c;
     await FlutterSoundRecorderPlatform.instance.startRecorder(this,
       path: null,
       codec: outputStream.codec.deprecatedCodec,
       toStream: true,
       audioSource: from.deprecatedAudioSource,
+      numChannels: codec.nbrChannels(),
+      sampleRate: codec.sampleRate,
     );
   }
 
@@ -600,7 +621,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
       if (!_isInited ) {
         throw Exception('Recorder is not open');
       }
-      _stop();
+      await _stop();
       if ((onProgress != null && interval == null) || (onProgress == null && interval != null))
       {
         throw(Exception('You must specify both the `onProgress` and the `interval` parameters'));
@@ -625,27 +646,19 @@ class TauRecorder implements FlutterSoundRecorderCallback {
         _startRecorderCompleter = Completer<void>();
         completer = _startRecorderCompleter;
 
+        _onProgress = onProgress;
+        if (_onProgress != null) {
+          await FlutterSoundRecorderPlatform.instance
+              .setSubscriptionDuration(this, duration: interval);
+        }
         switch (to.runtimeType) {
           case OutputFile: await _startRecorderToURI (from, to as OutputFile); break;
           case OutputBuffer: await _startRecorderToBuffer (from, to as OutputBuffer); break;
           case OutputStream: await _startRecorderToStream (from, to as OutputStream); break;
         }
 
-
-
-
-
         _recorderState = RecorderState.isRecording;
-        _onProgress = onProgress;
-        if (_onProgress != null) {
-          await FlutterSoundRecorderPlatform.instance
-              .setSubscriptionDuration(this, duration: interval);
-        }
 
-        // if the caller wants OGG/OPUS we must remux the temporary file
-        //if (_isOggOpus) {
-        //return _savedUri;
-        //}
       } on Exception {
         _startRecorderCompleter = null;
         rethrow;

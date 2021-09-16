@@ -49,7 +49,6 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
   String _mPath = 'tau_file.mp4';
   bool _mRecorderIsInited = false;
   double _mSubscriptionDuration = 0;
-  StreamSubscription? _recorderSubscription;
   int pos = 0;
   double dbLevel = 0;
 
@@ -66,19 +65,10 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
   @override
   void dispose() {
     stopRecorder(_mRecorder);
-    cancelRecorderSubscriptions();
-
     // Be careful : you must `close` the audio session when you have finished with it.
     _mRecorder.close();
 
     super.dispose();
-  }
-
-  void cancelRecorderSubscriptions() {
-    if (_recorderSubscription != null) {
-      _recorderSubscription!.cancel();
-      _recorderSubscription = null;
-    }
   }
 
   Future<void> openTheRecorder() async {
@@ -122,7 +112,12 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
   // -------  Here is the code to playback  -----------------------
 
   void record(TauRecorder? recorder) async {
-    await recorder!.record(from: DefaultInputDevice(), to: OutputFile(_mPath, codec: _codec));
+    await recorder!.record(
+        from: DefaultInputDevice(),
+        to: OutputFile(_mPath, codec: _codec,),
+        onProgress: _onProgressRecorder,
+        interval: Duration(milliseconds: _mSubscriptionDuration.floor()),
+        );
     setState(() {});
   }
 
@@ -184,7 +179,12 @@ class _RecorderOnProgressState extends State<RecorderOnProgress> {
             value: _mSubscriptionDuration,
             min: 0.0,
             max: 2000.0,
-            onChanged: (double d){_mSubscriptionDuration = d;},
+            onChanged: (double d){
+              _mSubscriptionDuration = d;
+              setState(() {
+
+              });
+            },
             //divisions: 100
           ),
         ]),

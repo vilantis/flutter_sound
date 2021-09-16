@@ -169,7 +169,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
   TonSkip? _onSkipBackward; // User callback "onPaused:"
   TonPaused? _onPaused; // user callback "whenPause:"
   final _lock = Lock();
-  static bool _reStarted = true;
+  //static bool _reStarted = true;
 
   ///
   /// @nodoc
@@ -658,7 +658,7 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
     bool withUI = false,
   }) async {
     if (_isInited != Initialized.notInitialized) {
-      return this;
+      throw Exception('Player is already open');
     }
     FlutterSoundPlayer? r;
     await _lock.synchronized(() async {
@@ -695,12 +695,12 @@ class FlutterSoundPlayer implements FlutterSoundPlayerCallback {
       throw Exception('Player is already initialized');
     }
 
-    if (_reStarted) {
+    //if (_reStarted) {
       // Perhaps a Hot Restart ?  We must reset the plugin
-      _logger.d('Resetting flutter_sound Player Plugin');
-      _reStarted = false;
-      await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
-    }
+      //_logger.d('Resetting flutter_sound Player Plugin');
+      //_reStarted = false;
+      //await FlutterSoundPlayerPlatform.instance.resetPlugin(this);
+    //}
     FlutterSoundPlayerPlatform.instance.openSession(this);
     _setPlayerCallback();
     assert(_openPlayerCompleter == null);
@@ -2022,7 +2022,7 @@ abstract class Food {
 
 
 /// The track to play by [FlutterSoundPlayer.startPlayerFromTrack()].
-/// @deprecated
+@deprecated
 class Track {
   /// The title of this track
   String? trackTitle;

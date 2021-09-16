@@ -151,6 +151,8 @@ enum AudioFocus {
   doNotRequestFocus,
 }
 
+
+@deprecated
 enum AudioDevice {
   speaker,
   // allowHeadset and allowEarPiece are the same behaviour on both Android and iOS
@@ -160,7 +162,9 @@ enum AudioDevice {
   // only for iOS, Android do the same as allowBlueTooth
   blueToothA2DP,
   // only for iOS, Android do nothing
-  airPlay
+  airPlay,
+  ///@deprecated
+  obsolete,
 }
 
 

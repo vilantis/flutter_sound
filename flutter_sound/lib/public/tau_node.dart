@@ -49,7 +49,7 @@ abstract class TauNode {
 
 /// An InputNode is a node with one output channel and no input channel
 abstract class InputNode  extends TauNode {
-  TauTrack? track;
+  TauTrack track = TauTrack();
 }
 
 
@@ -68,9 +68,9 @@ class TauTrack  {
 /// An InputBuffer is a possible source for a Player playback
 class InputBuffer extends InputNode {
   Uint8List inputBuffer;
-  /* ctor */ InputBuffer(this.inputBuffer, { TauCodec? codec, TauTrack? track  }) {
+  /* ctor */ InputBuffer(this.inputBuffer, { TauCodec? codec, TauTrack? track , }) {
 
-    this.track = track;
+    this.track = (track != null) ? track : TauTrack();
     this.codec = (codec != null) ? codec : DefaultCodec();
   }
 
@@ -88,8 +88,8 @@ class InputBuffer extends InputNode {
 /// An InputFile  is a possible source for a Player playback
 class InputFile extends InputNode {
   String uri;
-  /* ctor */ InputFile(this.uri, { TauCodec? codec, TauTrack? track }){
-    this.track = track;
+  /* ctor */ InputFile(this.uri, { TauCodec? codec, TauTrack? track , }){
+    this.track = (track != null) ? track : TauTrack();
     this.codec = (codec != null) ? codec : DefaultCodec();
   }
 
@@ -167,12 +167,16 @@ class Mic extends InputDevice {
 /* ctor */ Mic() { deprecatedAudioSource = AudioSource.microphone;}
 }
 
-/// The Blue Tooth Microphone is a possible source for a player playback
+
+
+/// The GeneralInputDevice is a possible source for a player playback
 /// The codec is platform dependant
-class HeadsetMic extends InputDevice {
+class GeneralInputDevice extends InputDevice {
 // Maybe a ctor with the codec
-/* ctor */ Mic() { deprecatedAudioSource = AudioSource.headsetMic;}
+/* ctor */ GeneralInputDevice(AudioSource audioSource) { deprecatedAudioSource = audioSource;}
 }
+
+
 
 /// A sound generator is a possible source for a player playback
 class SoundGenerator extends InputNode {
@@ -229,6 +233,7 @@ class OutputStream extends OutputNode {
   /* ctor */ OutputStream(this.stream, {Pcm? codec}){
     this.codec = (codec != null) ? codec : DefaultCodec();
   }
+  Pcm? getPcmCodec() => (codec is Pcm) ? codec as Pcm : null;
 
 }
 
