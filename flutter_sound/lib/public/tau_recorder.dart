@@ -550,7 +550,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
     }
 
      if ((!kIsWeb) &&
-        (Platform.isIOS)) { 
+        (Platform.isIOS)) {
          if ( (codec is Opus && codec.audioFormat == AudioFormat.ogg  ) ||
              _fileExtension(path )== '.opus') {
       _savedUri = path;
@@ -686,7 +686,7 @@ class TauRecorder implements FlutterSoundRecorderCallback {
       return completer.future;
     }
 
-    Future<void> _stopRecorder() async {
+    Future<String> _stopRecorder() async {
       _logger.d('FS:---> _stopRecorder ');
       while (_openRecorderCompleter != null) {
         _logger.w('Waiting for the recorder being opened');
@@ -694,9 +694,9 @@ class TauRecorder implements FlutterSoundRecorderCallback {
       }
       if (!_isInited ) {
         _logger.d('<--- _stopRecorder : Recorder is not open');
-        return;
+        return '';
       }
-      String? r;
+      String r = '';
 
       try {
         r = await _stop();
@@ -723,14 +723,15 @@ class TauRecorder implements FlutterSoundRecorderCallback {
             _savedUri,
           ]); // remux CAF to OGG
           if (rc != 0) {
-            return null;
+            return '';
           }
-          r = _savedUri;
+          r = _savedUri!;
         }
       } on Exception catch (e) {
         _logger.e(e);
       }
       _logger.d('FS:<--- _stopRecorder : $r');
+      return r;
     }
 
 

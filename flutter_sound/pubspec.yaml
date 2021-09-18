@@ -23,8 +23,8 @@ dependencies:
 # ============================================================================
   flutter_sound_platform_interface: # 9.0.0-alpha-2
     path: ../flutter_sound_platform_interface # Flutter Sound Dir
-  flutter_sound_web: # 9.0.0-alpha-2
-    path: ../flutter_sound_web # Flutter Sound Dir
+  tau_web: # 9.0.0-alpha-2
+    path: ../tau_web # Flutter Sound Dir
 # ============================================================================
 
 dev_dependencies:

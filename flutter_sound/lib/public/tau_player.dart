@@ -819,7 +819,6 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       assert(_closePlayerCompleter == null);
       _closePlayerCompleter = Completer<void>();
       completer = _closePlayerCompleter;
-      await FlutterSoundPlayerPlatform.instance.closePlayer(this);
       if (keepFocus == null)
         {
           keepFocus = (FlutterSoundPlayerPlatform.instance.numberOfOpenSessions() > 1);
@@ -827,6 +826,7 @@ class TauPlayer implements FlutterSoundPlayerCallback {
       if ( !keepFocus && _hasFocus) {
         await _setAudioFocus(focus: AudioFocus.abandonFocus); // Abandon the focus
       }
+      await FlutterSoundPlayerPlatform.instance.closePlayer(this);
       FlutterSoundPlayerPlatform.instance.closeSession(this);
     } on Exception {
       _closePlayerCompleter = null;

@@ -3,13 +3,12 @@
 
 -------------------------------------------------------------------------------------
 
-- ## Flutter Sound user: your [documentation is there](https://tau.canardoux.xyz/doc-v9/readme.html)
-- ## The [CHANGELOG file is here](https://tau.canardoux.xyz/doc-v9/changelog.html)
+- ## The [τ documentation](https://tau.canardoux.xyz/readme.html) is there
+- ## The [τ CHANGELOG](https://tau.canardoux.xyz/changelog.html) is there
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
 ![Demo](https://user-images.githubusercontent.com/27461460/77531555-77c9ec00-6ed6-11ea-9813-320f943b08cc.gif)
-
 
 ## Overview
 
